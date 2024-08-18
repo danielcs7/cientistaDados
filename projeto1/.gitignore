@@ -1,5 +1,5 @@
 #GIT
-.gitignore
+*.gitignore
 
 # Ignorar arquivos de ambiente e de configuração local
 .env
