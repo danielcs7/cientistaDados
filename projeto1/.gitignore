@@ -7,6 +7,7 @@
 # Ignorar arquivos de banco de dados
 *.duckdb
 *.db
+*.wal
 
 # Ignorar arquivos de dados
 *.csv
