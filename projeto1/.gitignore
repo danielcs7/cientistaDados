@@ -1,0 +1,16 @@
+#GIT
+.gitignore
+
+# Ignorar arquivos de ambiente e de configuração local
+.env
+
+# Ignorar arquivos de banco de dados
+*.duckdb
+*.db
+
+# Ignorar arquivos de dados
+*.csv
+*.json
+
+# Ignorar pastas de ambiente virtual
+venv/
