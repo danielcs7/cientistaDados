@@ -17,3 +17,6 @@
 
 # Ignorar pastas de ambiente virtual
 venv/
+
+# Ignorar pasta parquet
+parquet/
