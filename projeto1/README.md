@@ -1,6 +1,8 @@
 # Projeto1
 
-Bem-vindo ao Projeto1! Este projeto utiliza dados históricos de Fórmula 1 obtidos da [API Ergast](http://ergast.com/mrd/db/#csv).
+
+
+Bem-vindo ao 🚀 Projeto1! Este projeto utiliza dados históricos de Fórmula 1 obtidos da [API Ergast](http://ergast.com/mrd/db/#csv).
 
 ## Instalação e Configuração
 
@@ -13,7 +15,7 @@ git clone https://github.com/danielcs7/cientistaDados.git
 cd cientistaDados/projeto1
 ```
 
-## Instalando o pyenv
+## 🔧 Instalando o Pyenv
 
 Certifique-se de ter o pyenv instalado para gerenciar a versão do Python. Se ainda não o tiver, você pode instalá-lo seguindo as instruções [Pyenv](https://github.com/pyenv/pyenv)
 
@@ -43,6 +45,11 @@ source venv/bin/activate
 ```bash
 venv\Scripts\activate
 ```
+
+## 🛠️ Construído com
+
+<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" /> 
+
 
 ## Instalando as Dependências
 
