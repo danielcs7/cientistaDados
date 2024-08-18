@@ -24,7 +24,7 @@ Certifique-se de ter o pyenv instalado para gerenciar a versão do Python. Se ai
 Utilize o pyenv para instalar e definir a versão do Python para 3.11.5:
 ```bash
 pyenv install 3.11.5
-pyenv local 3.11.5
+pyenv global 3.11.5
 ```
 
 ## Criando o Ambiente Virtual
