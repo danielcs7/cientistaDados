@@ -12,5 +12,8 @@
 *.csv
 *.json
 
+# Ignorar arquivos .parquet
+*.parquet
+
 # Ignorar pastas de ambiente virtual
 venv/
