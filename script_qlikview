@@ -1,0 +1,1109 @@
+'CRIAÇÃO DE DIMENSAO QLIKVIEW'
+
+
+
+TRACE *************** INICIO DO PROCESSO DIMENSOES ****************;
+LET vInicioGeral = Now();
+LET vDirRoot = 'D:\AppQlikView';
+
+TRACE Hora de Inicio total: $(vInicioGeral);
+
+
+
+
+
+CRIAÇÃO DE MAPAS
+TRACE *************** INICIO MAPAS ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+
+
+//*********************************************************
+SET Verbatim=1;
+Capitalize:
+mapping LOAD ' ' & Trim(F1) & ' ', ' ' & Trim(F2) & ' 'Inline [
+F1, F2
+ Dos ,  dos 
+ Das ,  da 
+ Da ,  da 
+ Dos ,  do 
+ De ,  de 
+];
+SET Verbatim=0;
+
+
+
+Tabela:
+Mapping load CHAVE, CODIGO & '-' & NOME 
+FROM $(vDirRoot)\qvd\DyadExtracao\Tabela.qvd (qvd)
+WHERE Match(CLASSE,
+ -2007659000	/* Estados Civis*/ 
+,-1899999169	/* Comportamentos Fiscais*/ 
+,-1897131373	/* Tipos de Logradouros*/ 
+,-1895935907	/* Tipo de Contratação*/ 
+,-1895935906	/* Segmentação Assistencial*/ 
+,-1895935531	/* Parentescos*/ 
+,-1895935479	/* Tipos de Dependências*/ 
+,-1895921748	/* Motivos de Cancelamento de Produtos de Saúde de Beneficiários*/ 
+,-1895914827	/* Lotações da Pessoa*/ 
+,-1895911416	/* Grupos de Contrato*/ 
+,-1897131458	/* Motivos de Bloqueio de Cartão */
+,-1895922705	/* Modelos de Cartão */
+,-1897131454	/* Motivos de Cancelamento de Cartão */
+,-1895936220 	/* Especialidades de Atendimento */
+,-1895922977	/* Tipos de Procedimento */
+,-1892814504	/* Grupos para Envio para ANS */
+,-1892821439	/* Grau de participação */
+,-1895936215	/* Tipo de Autorização*/
+,-1895936210	/* Grupos de Co Participação*/
+,-1895935908	/* Nacional */
+,-1895935908	/* Municipal */
+,-1895913961	/* Pré-estabelecido */
+,-1895913961	/* Pós-estabelecido com custo operacional */
+,-1895922268    /* Motivos de Reajustes de Tabelas de Preço */
+,-1895922849 	/* Tabelas de Preços de Mensalidades de Beneficiários */
+,-1895918129    /* Motivos de Suspensao de Contrato */
+,-1891296962	/* Segmento de Mercado */
+,-1892821465	/* CBO */
+,-1899999717	
+,-1897148037
+);
+
+TabelaNome:
+Mapping load CHAVE, NOME 
+FROM $(vDirRoot)\qvd\DyadExtracao\Tabela.qvd (qvd)
+WHERE Match(CLASSE,
+ -2007659000	/* Estados Civis*/ 
+,-1899999169	/* Comportamentos Fiscais*/ 
+,-1897131373	/* Tipos de Logradouros*/ 
+,-1895935907	/* Tipo de Contratação*/ 
+,-1895935906	/* Segmentação Assistencial*/ 
+,-1895935531	/* Parentescos*/ 
+,-1895935479	/* Tipos de Dependências*/ 
+,-1895921748	/* Motivos de Cancelamento de Produtos de Saúde de Beneficiários*/ 
+,-1895914827	/* Lotações da Pessoa*/ 
+,-1895911416	/* Grupos de Contrato*/ 
+,-1897131458	/* Motivos de Bloqueio de Cartão */
+,-1895922705	/* Modelos de Cartão */
+,-1897131454	/* Motivos de Cancelamento de Cartão */
+,-1895936220 	/* Especialidades de Atendimento */
+,-1895922977	/* Tipos de Procedimento */
+,-1892814504	/* Grupos para Envio para ANS */
+,-1892821439	/* Grau de participação */
+,-1895936215	/* Tipo de Autorização*/
+,-1895936210	/* Grupos de Co Participação*/
+,-1895935908	/* Nacional */
+,-1895935908	/* Municipal */
+,-1895913961	/* Pré-estabelecido */
+,-1895913961	/* Pós-estabelecido com custo operacional */
+,-1895922268    /* Motivos de Reajustes de Tabelas de Preço */
+,-1895922849 	/* Tabelas de Preços de Mensalidades de Beneficiários */
+,-1892821465	/* CBO */
+);
+
+Classe:
+Mapping
+LOAD CHAVE, 
+     NOME
+FROM $(vDirRoot)\qvd\DyadExtracao\Classe.qvd(qvd);
+
+MapaVendedor:
+mapping LOAD
+    CHAVE,
+    VENDEDOR
+FROM [$(vDirRoot)\QVD\DyadExtracao\Vendedor.qvd] (qvd);
+
+EntidadeCodigo:
+Mapping Load CHAVE,TEXT(CODIGO) FROM [$(vDirRoot)\QVD\DyadExtracao\Entidade.qvd] (qvd);
+
+EntidadeNome:
+Mapping Load CHAVE,NOME FROM [$(vDirRoot)\QVD\DyadExtracao\Entidade.qvd] (qvd);
+
+BairroMapa:
+Mapping LOAD EnderecoCompleto,  Bairro FROM [$(vDirRoot)\xls\GeoView\DeParaCepBairroUdi.xlsx](ooxml, embedded labels, table is Plan1);
+
+
+
+
+TB_Grupo_Temp:    
+LOAD Distinct
+	 F1		AS F11, 
+     F2		AS F12, 
+     F3		AS F13, 
+     F4		AS F14, 
+     F5		AS F15
+FROM [$(vDirRoot)\xls\Grupo_Empresa\Grupo_Empresa_Dyad.xlsx]
+(ooxml, embedded labels, table is Plan1);
+
+
+Mapa_Grupo_Empresa:
+Mapping LOAD F11, F12 Resident TB_Grupo_Temp;
+
+Mapa_Taxa_Empresa:
+Mapping LOAD F11, F13 Resident TB_Grupo_Temp;
+
+Mapa_Numero_Empresa:
+Mapping LOAD F11, F14 Resident TB_Grupo_Temp;
+
+Mapa_Raiz_Grupo_Empresa:
+Mapping LOAD F11, F15 Resident TB_Grupo_Temp;
+
+//----- Inserido dia 28/01/19 Kellen
+
+TB_Grupo_Temp2:
+LOAD Distinct
+	 CNPJ			as F16, 
+     Cod_Contrato	as F17, 
+     Nome_Contrato	as F18, 
+     Grupo_Empresa_CNPJ		as F19
+FROM
+$(vDirRoot)\xls\Grupo_Empresa\Grupo_Empresa_Dyad.xlsx
+(ooxml, embedded labels, table is grupo_cnpj);
+
+
+Mapa_Grupo_Empresa_CNPJ:
+Mapping LOAD F16, F19 Resident TB_Grupo_Temp2;
+
+Mapa_Grupo_Empresa_CNPJ2:
+Mapping LOAD F17, F19 Resident TB_Grupo_Temp2;
+
+
+
+//-----
+
+
+MapaClassePTU:
+Mapping Load CLASSEPTUCHAVEPROFISSIONAL,CLASSEPTUCLASSE FROM [$(vDirRoot)\QVD\DyadExtracao\ClassePTU.qvd] (qvd);
+
+MapaClassePTUUF:
+Mapping Load CLASSEPTUCHAVEPROFISSIONAL,CLASSEPTU_UF FROM [$(vDirRoot)\QVD\DyadExtracao\ClassePTU.qvd] (qvd);
+
+
+MapaCBHPMdescricao:
+Mapping
+LOAD Chave, Descrição FROM [$(vDirRoot)\xls\Classe_Servico\Detalhe Grupo CBHPM.xlsx] (ooxml, embedded labels, table is BaseQlik);
+
+MapaCBHPMCodCap:
+Mapping
+LOAD Chave, CodCap FROM [$(vDirRoot)\xls\Classe_Servico\Detalhe Grupo CBHPM.xlsx] (ooxml, embedded labels, table is BaseQlik);
+
+MapaCBHPMNomeCap:
+Mapping
+LOAD Chave, NomeCap FROM [$(vDirRoot)\xls\Classe_Servico\Detalhe Grupo CBHPM.xlsx] (ooxml, embedded labels, table is BaseQlik);
+
+MapaCBHPMCodGrupo:
+Mapping
+LOAD Chave, CodGrupo FROM [$(vDirRoot)\xls\Classe_Servico\Detalhe Grupo CBHPM.xlsx] (ooxml, embedded labels, table is BaseQlik);
+
+MapaCBHPMNomeGrupo:
+Mapping
+LOAD Chave, NomeGrupo FROM [$(vDirRoot)\xls\Classe_Servico\Detalhe Grupo CBHPM.xlsx] (ooxml, embedded labels, table is BaseQlik);
+
+
+MapaCBHPMCodSubGrupo:
+Mapping
+LOAD Chave, CodSubGrupo FROM [$(vDirRoot)\xls\Classe_Servico\Detalhe Grupo CBHPM.xlsx] (ooxml, embedded labels, table is BaseQlik);
+
+MapaCBHPMNomeSubGrupo:
+Mapping
+LOAD Chave, NomeSubGrupo FROM [$(vDirRoot)\xls\Classe_Servico\Detalhe Grupo CBHPM.xlsx] (ooxml, embedded labels, table is BaseQlik);
+
+MapaInicioPlano:
+Mapping
+LOAD INICIOPLANOBENEFICIARIOSADESAO&' - '&INICIOPLANOCHAVEBENEFICIARIO,Date(Floor(INICIOPLANODATAINICIOADESAO))
+ FROM $(vDirRoot)\QVD\DyadExtracao\InicioPlano.qvd (qvd);
+
+
+MapaComissionamentoComercial:						/*Classificação conforme Chamado 103196 - categorização carteira PJ*/
+Mapping
+LOAD ContratoChave, [Nome Consultor] FROM $(vDirRoot)\xls\BaseComissionamento.xlsx (ooxml, embedded labels, table is BaseComissionamento);
+
+
+	
+TNUMM:
+LOAD * FROM $(vDirRoot)\QVD\Dyad\Dimensoes\TNUMM.qvd (qvd) ;
+
+
+MapaChaveTNUMM:
+ Mapping LOAD 	TNUMM.CodProcedimento,TNUMM.Chave Resident TNUMM  Order By  TNUMM.Vigencia desc;
+		
+DROP Table 	TNUMM;
+
+
+CODIGOLotacao:
+ Mapping
+LOAD CHAVE,CODIGO FROM $(vDirRoot)\QVD\DyadExtracao\Lotacao.qvd (qvd);
+
+NOMELotacao:
+ Mapping
+LOAD CHAVE,NOME FROM $(vDirRoot)\QVD\DyadExtracao\Lotacao.qvd (qvd);
+
+
+PESSOALotacao:
+ Mapping
+LOAD CHAVE,PESSOA FROM $(vDirRoot)\QVD\DyadExtracao\Lotacao.qvd (qvd);
+
+
+MapContratanteNome:
+Mapping
+LOAD [Contratante Chave Entidade], [Contratante Nome] FROM $(vDirRoot)\QVD\Dyad\Dimensoes\Contratantes.qvd (qvd);
+
+/*LOAD CHAVE, 
+     CODIGO, 
+     NOME, 
+     PESSOA
+FROM
+$(vDirRoot)\QVD\DyadExtracao\Lotacao.qvd
+(qvd);
+
+*/
+
+//---------------------------- Chamado 22294 -----------------------------------------------------------------------------------
+
+Mapa_Nova_Venda_Vendedor:
+LOAD ADESAO,
+	 CHAVE,
+	 CLASSE,
+	 CLASSE_CONTRATO,
+	 CLASSE_DSC_CONTRATO,
+	 CODIGO,
+	 Upper(NOME) AS NOME,
+	 SVENDEDOR,
+	 IF(CLASSE_CONTRATO = -1895936043,'PF','PJ') as TIPO_CONTRATO;
+SQL select v.classe, 
+
+Store Mapa_Nova_Venda_Vendedor INTO [$(vDirRoot)\QVD\Dyad\Gerais\Mapa_Nova_Venda_Vendedor.qvd](qvd);
+
+
+MapaFlgVendedorNovaVenda:
+Mapping
+LOAD ADESAO, 
+     1 as FLG_PF     
+FROM [$(vDirRoot)\QVD\Dyad\Gerais\Mapa_Nova_Venda_Vendedor.qvd](qvd);
+
+//---------------------------- Chamado 22294 -----------------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------- Criado para atender o chamado R16471 ------------------------------------------------------------
+ClasseProduto_Cont:
+Mapping
+LOAD Contrato_Codigo, 
+     Produto_Classe
+FROM [$(vDirRoot)\xls\Grupo_Empresa\ClasseProduto.xlsx]
+(ooxml, embedded labels, table is [1_Contratos]);
+
+ClasseProduto_Prod:
+Mapping
+LOAD Produto_Codigo, 
+     Produto_Classe
+FROM [$(vDirRoot)\xls\Grupo_Empresa\ClasseProduto.xlsx]
+(ooxml, embedded labels, table is [2_Produtos]);
+
+//---------------------------- Criado para atender o chamado R16471 ------------------------------------------------------------
+
+TRACE ************* TERMINO MAPAS ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+-------------------------------------------------------------------------------------------------------------------------------------------
+TRACE *************** INICIO CONTRATOS ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+
+Contratos: 
+LOAD *,
+     if(Len([Contrato Codigo])=5 And WildMatch([Contrato Codigo],'80*'),'APOSENTADOS/DEMITIDOS',[Contrato GrupoEmpresa]) as [Contrato GrupoEmpresa2];
+LOAD
+	*,
+     ApplyMap('Mapa_Grupo_Empresa',[Contrato Codigo],'DIVERSOS') 				as [Contrato GrupoEmpresa],
+	 ApplyMap('Mapa_Taxa_Empresa',[Contrato Codigo],'0,2') 						as [Contrato TaxaEmpresa],
+	 ApplyMap('Mapa_Numero_Empresa',[Contrato Codigo],[Contrato Codigo]) 		as [Contrato NumeroEmpresa],
+	 ApplyMap('Mapa_Raiz_Grupo_Empresa',[Contrato Codigo],'DIVERSOS')			as [Contrato RaizGrupoEmpresa], 
+	 
+	 ApplyMap('Mapa_Grupo_Empresa_CNPJ',[Contrato Contratante CNP],'DIVERSOS') 		as [Contrato GrupoEmpresaCNPJ], //--- 21/01/2019  Kellen
+	 ApplyMap('Mapa_Grupo_Empresa_CNPJ2',[Contrato Codigo],'DIVERSOS') 				as [Contrato GrupoEmpresaCNPJ2], //--- 21/01/2019  Kellen
+	 	
+	
+	If(Match([Contrato Codigo],25100,25101,25102,25103,25104,25105,25106,25108,25109,25110,25111,25113,25114,21180,21181,21182,21570),'Colaborador', //--21570 inserido dia 05/11/18 chamado 18042
+			If(Match([Contrato Classe],'Contratos de Custo Operacional') 
+					and ([Contrato Codigo]>= 6200 AND [Contrato Codigo]<=7699), 'SOU Pré',  //--- regra SOU fornecida pelo Reginaldo
+		
+			If(Match([Contrato Classe],'Contratos de Custo Operacional') 
+					and ([Contrato Codigo]>= 7700 AND [Contrato Codigo]<=7999), 'SOU CO',	 //--- regra SOU fornecida pelo Reginaldo
+			
+			If(Match([Contrato Classe],'Contratos de Custo Operacional') 
+                    and ([Contrato Codigo]>= 60000 AND [Contrato Codigo]<=69999), 'SOU Pré',  //--- regra SOU fornecida pelo Reginaldo //2021-09-14
+            If(Match([Contrato Classe],'Contratos de Custo Operacional') 
+                   and ([Contrato Codigo]>= 70000 AND [Contrato Codigo]<=79999), 'SOU CO',     //--- regra SOU fornecida pelo Reginaldo //2011-09-14
+ 
+				If(Match([Contrato Classe],'Contratos de Custo Operacional'),'Custo Operacional PJ',	
+				
+				If(Match([Contrato Classe],'Contratos Patrocinados') 
+					and Match([Contrato Codigo],3212,3213,4210), 'Custo Operacional PJ',
+				
+				If(Match([Contrato Classe],'Contratos Patrocinados') 
+					and Match([Contrato Codigo],6103), 'Custo Operacional PF',	
+					
+				If(Match([Contrato Classe],'Contratos Patrocinados'),  'Pré Pagamento PJ',		 
+								
+				If(Match([Contrato Classe],'Contratos Coletivos') , 'Pré Pagamento PJ',	
+				If(Match([Contrato Classe],'Contratos Individuais') , 'Pré Pagamento PF',						
+				If(Match([Contrato Classe],'Contratos de Intercâmbio Pré-Pagamento') , 'Pré Pagamento Unimed Fora',
+				If(Match([Contrato Classe],'Contratos de Intercâmbio em Custo') , 'Intercâmbio', 'Contrato Não Identificado'	
+							
+							))))))))))))) as [Contrato Tipo Empresa Detalhado],
+	
+	
+				If(Match([Contrato Codigo],25100,25101,25102,25103,25104,25105,25106,25108,25109,25110,25111,25113,25114,21180,21181,21182,21570),'Colaborador', //--21570 inserido dia 05/11/18 chamado 18042
+	
+				If(Match([Contrato Classe],'Contratos de Custo Operacional') 
+					and ([Contrato Codigo]>= 6200 AND [Contrato Codigo]<=7999), 'SOU',  //--- regra SOU fornecida pelo Reginaldo
+					
+					If(Match([Contrato Classe],'Contratos de Custo Operacional') 
+                    and ([Contrato Codigo]>= 60000 AND [Contrato Codigo]<=69999), 'SOU',  //--- regra SOU fornecida pelo Reginaldo //2021-09-14
+            If(Match([Contrato Classe],'Contratos de Custo Operacional') 
+                   and ([Contrato Codigo]>= 70000 AND [Contrato Codigo]<=79999), 'SOU',     //--- regra SOU fornecida pelo Reginaldo //2011-09-14	
+			
+				
+				If(Match([Contrato Classe],'Contratos de Custo Operacional'),'Custo Operacional',	
+				
+				If(Match([Contrato Classe],'Contratos Patrocinados') 
+					and Match([Contrato Codigo],3212,3213,6103,4210), 'Custo Operacional',
+					
+				If(Match([Contrato Classe],'Contratos Patrocinados'),  'Pré Pagamento',		 
+								
+				If(Match([Contrato Classe],'Contratos Coletivos') , 'Pré Pagamento',	
+				If(Match([Contrato Classe],'Contratos Individuais') , 'Pré Pagamento',						
+				If(Match([Contrato Classe],'Contratos de Intercâmbio Pré-Pagamento') , 'Pré Pagamento',
+				If(Match([Contrato Classe],'Contratos de Intercâmbio em Custo') , 'Intercâmbio', 'Contrato Não Identificado'	
+							
+							))))))))))) as [Contrato Tipo Empresa];
+LOAD
+    CHAVECONTRATO							as [Contrato Chave],
+    CODCONTRATO								as [Contrato Codigo],
+    NOMECONTRATO							as [Contrato Nome],
+    ApplyMap('Classe',CLASSECONTRATOCHAVE) 	as [Contrato Classe],  
+    ApplyMap('MapaComissionamentoComercial',CHAVECONTRATO,'Sem Consultor Informado') 				as [Contrato Categorizacao Carteira], /*Classificação conforme Chamado 103196 - categorização carteira PJ*/
+    PESSOA									as [Contrato Contratante Pessoa],
+    CODIGOPESSOA 							as [Contrato Contratante Codigo],
+	Mapsubstring('Capitalize',Capitalize(NOME))									as [Contrato Contratante Nome],
+	CPFPESSOA 								as [Contrato Contratante CNP],
+	CNAEPRIMARIO							as [Contrato Contratante CNAE], //INSERIDO DANIEL CARLOS 20/08/2020 CHAMADO R28133 INCLUSÃO CÓDIGO CNAE
+    ApplyMap('Tabela',SGRUPOCONTRATO) 		as [Contrato Grupo Contrato],
+    ApplyMap('Tabela',SGRUPOCONTRATO,SubField(NOMECONTRATO,'/',1)) 		as [Contrato Grupo Contrato Ajustado],
+    ZCODIGOCARDIO							as [Contrato Zcodigocardio],
+//    chavepessocacontrato					as [Contrato Pessoa contrato Chave],
+//	ApplyMap('Tabela',STIPOCONTRATA) 		as [Contrato Tipo Contratacao],
+	Date(INICIO,'DD/MM/YYYY')				as [Contrato Data Suspensao],
+	ApplyMap('Tabela',MOTIVO) 				as [Contrato Motivo Suspensao],
+	ApplyMap('Tabela',MOTCANCELAMENTO) 	    as [Contrato Motivo Cancelamento],
+	Date(Floor(INICIOCONTRATO))				as [Contrato Inicio Vigencia],
+	Date(Floor(FIMCONTRATO))				as [Contrato Fim Vigencia]
+	;
+
+SQL 
+SELECT DISTINCT 
+		LEFT JOIN (
+    SELECT
+        CONTRATO,
+        INICIO,
+        MOTIVO,
+        RANK() OVER (
+            PARTITION BY CONTRATO ORDER BY CONTRATO, INICIO DESC, CHAVE
+        ) AS RK
+    FROM EVENTO
+    WHERE CLASSE = -1895914655
+    AND NOT FIM IS NULL
+) SUSP ON SUSP.CONTRATO = CT.CHAVE AND RK=1
+
+UNION 
+
+SELECT DISTINCT 
+		 ct.CHAVE			AS CHAVECONTRATO
+		LEFT JOIN (
+    SELECT
+        CONTRATO,
+        INICIO,
+        MOTIVO,
+        RANK() OVER (
+            PARTITION BY CONTRATO ORDER BY CONTRATO, INICIO DESC, CHAVE
+        ) AS RK
+    FROM EVENTO
+    WHERE CLASSE = -1895914655
+    AND NOT FIM IS NULL
+) SUSP ON SUSP.CONTRATO = CT.CHAVE AND RK=1;
+
+Store Contratos into [$(vDirRoot)\QVD\Dyad\Dimensoes\Contratos.qvd](qvd);
+Drop Table Contratos;
+
+TRACE ************* TERMINO CONTRATOS ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+
+//EXIT SCRIPT;
+
+----------------------------------------------------------------------------------------------
+TRANSFORMAÇÃO 
+TRACE *************** INICIO FATO CUSTO ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+
+//LET vDataBase = Date(MakeDate(2019,11),'DD/MM/YY');
+LET vDataBase = Date(Today(),'DD/MM/YY');
+//set MesesProcessar = 1;
+
+Trace;
+Trace ------------ Leitura de Custos;
+
+Trace Leitura de Guias;
+For i = (MesesProcessar-1) to 0 step -1 
+ LET Comp		= Date(AddMonths(MonthStart(Date#('$(vDataBase)','DD/MM/YY')),-$(i)),'YYYYMM');
+ LET Pasta 		= Left(Comp,4);
+ LET qvdraw 	= '$(PATHRAW)\$(Pasta)\GuiasRaw$(Comp).qvd';
+ LET qvdfinal 	= '$(PATHQVD)_$(Pasta)\Guias$(Comp).qvd';
+ TRACE $(qvdraw);
+	
+ if(FileSize('$(qvdraw)')>0)then
+		
+		Pacotes:
+		load Distinct UNIFICADOR AS UNIFICADORCHAVE From [$(qvdraw)](qvd);
+		MapaCompPacote:
+		Mapping load CHAVE,Year(SCOMPETENCIA)*100+Month(SCOMPETENCIA) from [$(qvdraw)](qvd) where IsNum(SCOMPETENCIA);
+		
+		MapaProntoSocorro:
+		Mapping load CHCRIACAOREFERENCIADA,1 from [$(qvdraw)](qvd) where PROCEDIMENTO = 25023641; //10101039 - Consulta em pronto socorro
+		
+		MapaCustos:
+		mapping Load
+			SCOMPETENCIA&CODIGOCONTRATO,
+			SUM(TOTAL) as ValorTotal		
+		From [$(qvdraw)](qvd)
+		Group by SCOMPETENCIA , CODIGOCONTRATO;
+		
+		Guias:		
+			load 
+				 CHAVE																	as [Guia.Chave]  // Está sendo usado no Portal Empresa
+				,NUM(Num#(NUMERO),'0') 													as [Guia.Numero]
+				,NUMEROGUIAPRESTADOR													as [Guia.NumeroGuiaPrestador]
+				,LOTE																	as [Guia.NumeroLote]  // Está sendo usado no Portal Empresa
+				,CLASSE																	as [Guia.Classe]  // Está sendo usado no Portal Empresa
+				,ApplyMap('Classe',CLASSE) 												as [Guia.ClasseNome]
+				,Year(SCOMPETENCIA)*100+Month(SCOMPETENCIA)								as [Guia.CompetenciaPagamento]
+				,ApplyMap('TabelaCodigo',CID) 											as [Guia.CIDCodigo]
+				,ApplyMap('TabelaNome',CID)												as [Guia.CIDNome]
+				,(CREDENCIADO=SOLICITANTE)*-1											as [Guia.FlagAutoGeradoCredenciado]
+				,CREDENCIADO 															as [Guia.CredenciadoChave]    // Está sendo usado no Portal Empresa
+				,ApplyMap('EntidadeCodigo',CREDENCIADO) 								as [Guia.CredenciadoCodigo]
+				,ApplyMap('EntidadeNome',CREDENCIADO) 									as [Guia.CredenciadoNome]
+				,ApplyMap('EntidadeCNP',CREDENCIADO) 									as [Guia.CredenciadoCNP]
+				,ApplyMap('Classe',ApplyMap('EntidadeClasse',CREDENCIADO))				as [Guia.CredenciadoClasse]				
+				,SOLICITANTE 															as [Guia.SolicitanteChave]  // Está sendo usado no Portal Empresa
+				,ApplyMap('EntidadeCodigo',SOLICITANTE) 								as [Guia.SolicitanteCodigo]
+				,ApplyMap('EntidadeNome',SOLICITANTE) 									as [Guia.SolicitanteNome]
+				,ApplyMap('Classe',ApplyMap('EntidadeClasse',SOLICITANTE)) 				as [Guia.SolicitanteClasse]
+				,ApplyMap('EntidadeCNP',SOLICITANTE) 									as [Guia.SolicitanteCNP]
+				,SCBOS																	as [Guia.SCBOS]  // Adicionado para ser usado no Portal Empresa
+				,ApplyMap('TabelaCodigo',SCBOS) 										as [Guia.SolicitanteCBOCodigo]
+				,ApplyMap('TabelaNome',SCBOS) 											as [Guia.SolicitacaoCBONome]
+				,ApplyMap('TabelaCodigo',CARATER) 										as [Guia.SolicitacaoCaraterCodigo]
+				,ApplyMap('TabelaNome',CARATER)											as [Guia.SolicitacaoCaraterNome]
+				,TITULAR 																as [Guia.TitularChave]
+				,ApplyMap('EntidadeCodigo',TITULAR) 									as [Guia.TitularCodigo]
+				,ApplyMap('EntidadeNome',TITULAR) 										as [Guia.TitularNome]
+				,ApplyMap('EntidadeCNP',TITULAR) 										as [Guia.TitularCNP]
+				,PESSOACONTRATOPRODUTO													as [Guia.ChaveBeneficiarioPlanoSaude]
+				,DEPENDENTE 															as [Guia.BeneficiarioChave]
+				,ApplyMap('EntidadeCodigo',DEPENDENTE) 									as [Guia.BeneficiarioCodigo]
+				,Mapsubstring('Capitalize',Capitalize(ApplyMap('EntidadeNome',DEPENDENTE))) as [Guia.BeneficiarioNome]
+				,ApplyMap('EntidadeCNP',DEPENDENTE) 									as [Guia.BeneficiarioCNP]
+				,Date(Floor(ApplyMap('EntidadeNascimento',DEPENDENTE))) 				as [Guia.BeneficiarioDtNascimento]
+				,ApplyMap('EntidadeSexo',DEPENDENTE) 									as [Guia.BeneficiarioSexo]
+				,ATENDIMENTORECEMNATO													as [Guia.BeneficiarioRecemNato]
+				,PESSOACONTRATO															as [Guia.BeneficiarioAdesao]  // Está sendo usado no Portal Empresa
+				,Date(ApplyMap('AdesaoInicio',PESSOACONTRATO))							as [Guia.BeneficiarioInicioVinculo]
+				,Date(ApplyMap('AdesaoFim',PESSOACONTRATO))								as [Guia.BeneficiarioFimVinculo]
+				,ApplyMap('EntidadeNomeMae',DEPENDENTE) 								as [Guia.BeneficiarioNomeMae] // Solicitado pela Axismed
+				,TIPODEPENDENCIA 														as [Guia.TipoDependenciaChave]
+				,ApplyMap('TabelaCodigo',TIPODEPENDENCIA) 								as [Guia.TipoDependenciaCodigo]
+				,ApplyMap('TabelaNome',TIPODEPENDENCIA) 								as [Guia.TipoDependenciaNome]
+				,CONTRATANTE 															as [Guia.ContratanteChave]
+				,ApplyMap('EntidadeCodigo',CONTRATANTE) 								as [Guia.ContratanteCodigo]
+				,ApplyMap('EntidadeNome',CONTRATANTE) 									as [Guia.ContratanteNome]
+				,ApplyMap('EntidadeCNP',CONTRATANTE) 									as [Guia.ContratanteCNP]
+				,if(len(Keepchar(ApplyMap('EntidadeCNP',CONTRATANTE),'0123456789'))=11,'Fisica','Juridica') as [Guia.ContratanteTipoPessoa]
+				,(EXECUTANTE=SOLICITANTE)*-1											as [Guia.FlagAutoGeradoExecutante]
+				,EXECUTANTE 															as [Guia.ExecutanteChave]
+				,ApplyMap('EntidadeCodigo',EXECUTANTE) 									as [Guia.ExecutanteCodigo]
+				,ApplyMap('EntidadeNome',EXECUTANTE) 									as [Guia.ExecutanteNome]
+				,ApplyMap('EntidadeCNP',EXECUTANTE) 									as [Guia.ExecutanteCNP]
+				,ApplyMap('EntidadeCep',EXECUTANTE) 									as [Guia.ExecutanteCEP] // Solicitado pela Axismed
+				,ApplyMap('Classe',ApplyMap('EntidadeClasse',EXECUTANTE))  	as [Guia.ExecutanteClasseNome]
+				,Applymap('MapaAutoGeradoVinculo',(CREDENCIADO&'-'&SOLICITANTE&'-'&(Year(SCOMPETENCIA)*100+Month(SCOMPETENCIA))),0)as [Guia.FlagAutoGeradoVinculo]
+				,Applymap('AutoGeradoVinculoCorpoClinico',(CREDENCIADO&'-'&SOLICITANTE&'-'&(Year(SCOMPETENCIA)*100+Month(SCOMPETENCIA))),0)as [Guia.AutoGeradoVinculoCorpoClinico]				
+				,MEDICOAUDITOR 															as [Guia.MedicoAuditorChave]
+				,ApplyMap('EntidadeCodigo',MEDICOAUDITOR) 								as [Guia.MedicoAuditorCodigo]
+				,ApplyMap('EntidadeNome',MEDICOAUDITOR) 								as [Guia.MedicoAuditorNome]
+				,ApplyMap('EntidadeCNP',MEDICOAUDITOR) 									as [Guia.MedicoAuditorCNP]
+				,ENFERMEIROAUDITOR 														as [Guia.EnfermeiroAuditorChave]
+				,ApplyMap('EntidadeCodigo',ENFERMEIROAUDITOR)							as [Guia.EnfermeiroAuditorCodigo]
+				,ApplyMap('EntidadeNome',ENFERMEIROAUDITOR) 							as [Guia.EnfermeiroAuditorNome]
+				,ApplyMap('EntidadeCNP',ENFERMEIROAUDITOR) 								as [Guia.EnfermeiroAuditorCNP]
+				,num(CHCRIACAOREFERENCIADA,'0')			 								as [Guia.SenhaAutorizacao]  // Está sendo usado no Portal Empresa
+//				,num(SENHAFORNECIDA,'0')			 									as [Guia.SENHAFORNECIDA]
+				,LINHA																	as [Guia.Sequencial]
+				,Date(Floor(ATENDIMENTOINI))											as [Guia.DataInicioAtendimento]
+				,Date(Floor(ATENDIMENTOFIM))											as [Guia.DataFimAtendimento]
+				,PROCEDIMENTO 															as [Guia.ProcedimentoChave] // Está sendo usado no Portal Empresa
+				,ApplyMap('TabelaCodigo',PROCEDIMENTO) 									as [Guia.ProcedimentoCodigo]
+				,ApplyMap('TabelaNome',PROCEDIMENTO) 									as [Guia.ProcedimentoNome]
+				,ApplyMap('Classe',ApplyMap('TabelaClasse',PROCEDIMENTO)) 				as [Guia.ProcedimentoClasseDyad]
+				,ApplyMap('TabelaNome',ApplyMap('TabelaTipoProcedimento',PROCEDIMENTO)) as [Guia.ProcedimentoTipoServico]
+				,ApplyMap('TabelaNome',ApplyMap('TabelaGrupoProcedimento',PROCEDIMENTO))as [Guia.ProcedimentoGrupoProcedimento]
+				,ApplyMap('TabelaPrecificacao',PROCEDIMENTO)							as [Guia.ProcedimentoPrecificacaoCodigo]
+				,QUANTIDADEAUTORIZADA													as [Guia.ProcedimentoQuantAutorizada]
+				,QUANTIDADECOBRADA														as [Guia.ProcedimentoQuantCobrada]	// Está sendo usado no Portal Empresa
+				,VALORUNITARIO															as [Guia.ProcedimentoVlrUnitario]	
+				,TABELACOBRANCA 														as [Guia.ProcedimentoTabelaChave]
+				,ApplyMap('TabelaCodigo',TABELACOBRANCA) 								as [Guia.ProcedimentoTabelaCodigo]
+				,ApplyMap('TabelaNome',TABELACOBRANCA) 									as [Guia.ProcedimentoTabelaNome]
+				,PAGPROCEDIPERC 														as [Guia.Procedimento%Pagto]
+				,ADICIURGEMEPERC 														as [Guia.Procedimento%Adicional]
+				,FATORCALCULADO 														as [Guia.ProcedimentoFatorCalculado]
+				,GLOSADOQDE  															as [Guia.ProcedimentoQuantGlosada]
+				,Num(Round(CALCULADO,$(PREC)),'$(DECFMT)')								as [Guia.ProcedimentoVlrCalculado]
+				,Num(Round(CALCULADOFATORDEFILME,$(PREC)),'$(DECFMT)')					as [Guia.ProcedimentoVlrCalcFatorFilme]
+				,Num(Round(CALCULADOCUSTOOPERACIONAL,$(PREC)),'$(DECFMT)')				as [Guia.ProcedimentoVlrCalcCustoOperacional]
+				,Num(Round(CALCULADOHONORARIOS,$(PREC)),'$(DECFMT)')					as [Guia.ProcedimentoVlrCalcHonorarios]
+				,Num(Round(CALCULADOPORTEANESTESICO,$(PREC)),'$(DECFMT)')				as [Guia.ProcedimentoVlrCalcPortAnestesico]
+				,Num(Round(CALCULADOOUTROSVALORES,$(PREC)),'$(DECFMT)')					as [Guia.ProcedimentoVlrCalcOutroValores]
+				,Num(Round(COBCALCULADO,$(PREC)),'$(DECFMT)')							as [Guia.ProcedimentoVlrCalculadoCob]
+				,Num(Round(COBCALCULADOFATORDEFILME,$(PREC)),'$(DECFMT)')				as [Guia.ProcedimentoVlrCalcFatorFilmeCob]
+				,Num(Round(COBCALCULADOCUSTOOPERACIONAL,$(PREC)),'$(DECFMT)') 			as [Guia.ProcedimentoVlrCalcCustoOperacionalCob]
+				,Num(Round(COBCALCULADOHONORARIOS,$(PREC)),'$(DECFMT)')					as [Guia.ProcedimentoVlrCalcHonorariosCob]
+				,Num(Round(COBCALCULADOPORTEANESTESICO,$(PREC)),'$(DECFMT)') 			as [Guia.ProcedimentoVlrCalcPortAnestesicoCob]
+				,Num(Round(COBCALCULADOOUTROSVALORES,$(PREC)),'$(DECFMT)')	 			as [Guia.ProcedimentoVlrCalcOutroValoresCob]
+				,Num(Round(PAGBC,$(PREC)),'##0,00') 	 								as [Guia.ProcedimentoBasePagamento]
+				,Num(Round(GLOSADO,$(PREC)),'$(DECFMT)') 								as [Guia.ProcedimentoVlrGlosado]
+				,Num(Round(TOTAL,$(PREC)),'$(DECFMT)')	 								as [Guia.ProcedimentoVlrPago]    // << -- Custo
+				,Num(Round(COBRADO,$(PREC)),'$(DECFMT)') 								as [Guia.ProcedimentoVlrCobrado]
+				,Num(Round(TAXAADMIN,$(PREC)),'$(DECFMT)')								as [Guia.ProcedimentoTxAdmin]
+				,Num(Round(INSS,$(PREC)),'$(DECFMT)')									as [Guia.ProcedimentoINSS]
+				,Num(Round(COBBC,$(PREC)),'##0,00')										as [Guia.ProcedimentoBaseCobBenef] 
+				,TAXAADMINPERCCOB														as [Guia.ProcedimentoTaxaAdmPercCob]  
+				,(COBBC*TAXAADMINPERCCOB)/100											as [Guia.ProcedimentoVlrTaxaAdmPercCob]
+				,IF(ISNULL((COBBC*TAXAADMINPERCCOB)),0,(COBBC*TAXAADMINPERCCOB)/100)+COBBC	as [Guia.ProcedimentoVlrCobBeneficiario]   
+				,COPARTICIPIPERC 														as [Guia.Procedimento%Coparticipacao]
+				,Num(Round(COPARTICIP,$(PREC)),'$(DECFMT)')								as [Guia.ProcedimentoCoparticipacao]
+				,SATOUNIMED																as [Guia.ProcedimentoAto]
+				,ApplyMap('TabelaNome',TIPODESPESA) 									as [Guia.ProcedimentoTipoDespesa]
+				,TIPODEATENDIMENTO 														as [Guia.TipoAtendimentoChave]
+				,ApplyMap('TabelaCodigo',TIPODEATENDIMENTO) 							as [Guia.TipoAtendimentoCodigo]
+				,ApplyMap('TabelaNome',TIPODEATENDIMENTO) 								as [Guia.TipoAtendimentoNome]
+				,CUSTOASSISTENCIAL 							 							as [Guia.CustoAssistencialChave]
+				,ApplyMap('RecursoCodigo',CUSTOASSISTENCIAL) 							as [Guia.CustoAssistencialCodigo]
+				,ApplyMap('RecursoNome',CUSTOASSISTENCIAL)   							as [Guia.CustoAssistencialNome]
+				,ApplyMap('Classe',ApplyMap('RecursoClasse',CUSTOASSISTENCIAL)) 		as [Guia.CustoAssistencialClasse]
+				,ApplyMap('TabelaNome',ApplyMap('RecursoAto',CUSTOASSISTENCIAL)) 		as [Guia.CustoAssistencialAto]
+				,RECURSO																as [Guia.RecursoChave]
+				,ApplyMap('RecursoCodigo',RECURSO) 										as [Guia.RecursoCodigo]
+				,ApplyMap('RecursoNome',RECURSO)  					 					as [Guia.RecursoNome]
+				,ApplyMap('Classe',ApplyMap('RecursoClasse',RECURSO)) 					as [Guia.RecursoClasse]
+				,ApplyMap('TabelaNome',ApplyMap('RecursoAto',RECURSO)) 					as [Guia.RecursoAto]
+				,ApplyMap('RecursoAcomodacao',RECURSO) 									as [Guia.RecursoAcomodacao]
+				,ApplyMap('RecursoCoparticipativo',RECURSO) 							as [Guia.RecursoCoparticipativo]
+				,ApplyMap('TabelaCodigo',ORIGEM) 										as [Guia.OrigemCodigo]
+				,ApplyMap('TabelaNome',ORIGEM) 											as [Guia.OrigemNome]
+				,ApplyMap('TabelaCodigo',INDICACAOACIDENTE) 							as [Guia.IndicacaoAcidenteCodigo]
+				,ApplyMap('TabelaNome',INDICACAOACIDENTE) 								as [Guia.IndicacaoAcidenteNome]
+				,ApplyMap('TabelaCodigo',TIPOCONSULTA)									as [Guia.TipoConsultaCodigo]
+				,ApplyMap('TabelaNome',TIPOCONSULTA) 									as [Guia.TipoConsultaNome]
+				,ApplyMap('TabelaCodigo',GRAUDEPARTICIPACAO)							as [Guia.GrauDeParticipacaoCodigo]
+				,ApplyMap('TabelaNome',GRAUDEPARTICIPACAO) 								as [Guia.GrauDeParticipacaoNome]
+				,ApplyMap('TabelaCodigo',FATOGERADOR) 									as [Guia.FatoGeradorCodigo]
+				,ApplyMap('TabelaNome',FATOGERADOR) 									as [Guia.FatoGeradorNome]
+				,ApplyMap('TabelaCodigo',TIPOINTERNACAO) 								as [Guia.TipoInternacaoCodigo]
+				,ApplyMap('TabelaNome',TIPOINTERNACAO) 									as [Guia.TipoInternacaoNome]
+				,ApplyMap('TabelaCodigo',ACOMODACAO) 									as [Guia.AcomodacaoCodigo]
+				,ApplyMap('TabelaNome',ACOMODACAO) 										as [Guia.AcomodacaoNome]
+				,Date(SOLICITACAO)														as [Guia.DataSolicitacao]
+				,SOLICITACAOH															as [Guia.DataHoraSolicitacao]
+				,Date(AUTORIZACAOINICAB)												as [Guia.DataAutorizacao]
+				,Date(EMISSAO)															as [Guia.DataEmissao]
+				,Date(RECEBIMENTO)														as [Guia.DataRecebimentoGuia]
+				,Date(DATAINICIOFATURAMENTO)											as [Guia.DataInicioFaturamento] // Está sendo usado no Portal Empresa
+				,Time(HORAINICIOFATURAMENTO)											as [Guia.HoraInicioFaturamento] // Adicionado para atender as cargas do Portal Empresa (T3339)
+				,Date(DATAFIMFATURAMENTO)												as [Guia.DataFimFaturamento] 	// Está sendo usado no Portal Empresa
+				,Time(HORAFIMFATURAMENTO)												as [Guia.HoraFimFaturamento] 	// Adicionado para atender as cargas do Portal Empresa (T3339)
+				,Date(REALIZACAO)														as [Guia.DataRealizacao]
+				,REALIZACAOH															as [Guia.DataHoraIniRealizacao]
+				,REALIZACAOFIMH															as [Guia.DataHoraFimRealizacao]
+				,NUMEROCARTAO															as [Guia.NumeroCartao] 			// Está sendo usado no Portal Empresa
+				,NUMEROGUIAPRINCPREST													as [Guia.NumeroGuiaPrincipal]
+				//,num(PEDIDOCHAVECRIACAO,'0')											as [Guia.PedidoChaveCriacao]
+				,NUM(Num#(PEDIDOCHAVECRIACAO),'0') 										as [Guia.PedidoChaveCriacao]
+				//,num(PEDIDOCHAVEBAIXA,'0')												as [Guia.PedidoChaveBaixa]
+				,NUM(Num#(PEDIDOCHAVEBAIXA),'0') 										as [Guia.PedidoChaveBaixa]
+				,CHAVEPLANO 															as [Guia.PlanoChave]
+				,ApplyMap('RecursoCodigo',CHAVEPLANO) 									as [Guia.PlanoCodigo]
+				,ApplyMap('RecursoNome',CHAVEPLANO) 									as [Guia.PlanoNome]
+				,ApplyMap('RecursoClasse',CHAVEPLANO) 									as [Guia.PlanoClasse]
+				,ApplyMap('RecursoAcomodacao',CHAVEPLANO) 								as [Guia.PlanoAcomodacao]
+				,ApplyMap('RecursoRegulamentacao',CHAVEPLANO) 							as [Guia.PlanoRegulamentacao]
+				,ApplyMap('RecursoPTU',CHAVEPLANO) 										as [Guia.PlanoPTU]
+				,ApplyMap('RecursoCoparticipativo',CHAVEPLANO) 							as [Guia.PlanoCoparticipativo]	
+				,SFORMACAOPRECO															as [Guia.FormacaoPrecoChave]
+				,ApplyMap('TabelaCodigo',SFORMACAOPRECO) 								as [Guia.FormacaoPrecoCodigo]
+				,ApplyMap('TabelaNome',SFORMACAOPRECO) 									as [Guia.FormacaoPrecoNome]
+				,STIPOCONTRATA															as [Guia.TipoContratacaoChave]
+				,ApplyMap('TabelaCodigo',STIPOCONTRATA) 								as [Guia.TipoContratacaoCodigo]
+				,ApplyMap('TabelaNome',STIPOCONTRATA) 									as [Guia.TipoContratacaoNome]
+				,STATUSGUIA																as [Guia.Status]
+				,STATUS																	as [Guia.ProcedimentoStatus]
+				,FLAGCRITICAREDUZCOBRANCA												as [Guia.ProcedimentoCriticaReduzCobranca]
+				,CHAVECONTRATO															as [Guia.ContratoChave]
+				//,CODIGOCONTRATO															as [Guia.ContratoCodigo]
+				//,Num(Round(ApplyMap('MapaTaxaEmpresa',CODIGOCONTRATO,0.2),$(PREC)),'$(DECFMT)') as [Guia.ContratoTaxaAdmEmpresa]
+				
+				,NUM(Num#(CODIGOCONTRATO),'0') as [Guia.ContratoCodigo] //CHAMADO 009032
+			    ,Num#(Round(ApplyMap('MapaTaxaEmpresa',NUM(Num#(CODIGOCONTRATO),'0'),0.2),$(PREC)),'$(DECFMT)') as [Guia.ContratoTaxaAdmEmpresa] //CHAMADO 009032
+				
+				,ApplyMap('Classe',CLASSECONTRATO) 										as [Guia.ContratoClasse]
+				,NOMECONTRATO															as [Guia.ContratoNome]
+				,ApplyMap('TabelaCodigo',SGRUPOCONTRATO)								as [Guia.ContratoGrupoContrato]
+	//			,Num(Round(TAXAPEDIDO,$(PREC)),'$(DECFMT)')								as [Guia.PedidoVlrTaxa]   // Comentado dia 12/09/2019 após análise que campo esta sendo dropado no final do Datamart!!
+				,ApplyMap('Classe',PEDIDOCLASSE)  										as [Guia.PedidoClasse]
+				,Num(Round(ISS       ,$(PREC)*10),'##0,00')								as [Guia.VlrImpISS]
+				,Num(Round(COFINS    ,$(PREC)*10),'##0,00')								as [Guia.VlrImpCOFINS]
+				,Num(Round(CSLL      ,$(PREC)*10),'##0,00')								as [Guia.VlrImpCSLL]
+				,Num(Round(PIS       ,$(PREC)*10),'##0,00')								as [Guia.VlrImpPIS]
+				,Num(Round(INSS      ,$(PREC)*10),'##0,00')								as [Guia.VlrImpINSS]
+				,Num(Round(IR        ,$(PREC)*10),'##0,00')								as [Guia.VlrImpIR]
+				,Num(Round(ISSRETFON ,$(PREC)*10),'##0,00')								as [Guia.VlrImpISSRETFON]
+				,Num(Round(INSSRETFO ,$(PREC)*10),'##0,00')								as [Guia.VlrImpINSSRETFO]
+				,Num(Round(COFINSREFO,$(PREC)*10),'##0,00')								as [Guia.VlrImpCOFINSREFO]
+				,Num(Round(CSLLREFO  ,$(PREC)*10),'##0,00')								as [Guia.VlrImpCSLLREFO]
+				,Num(Round(PISREFO   ,$(PREC)*10),'##0,00')								as [Guia.VlrImpPISREFO]
+				,Num(Round(IRRETFONT ,$(PREC)*10),'##0,00')								as [Guia.VlrImpIRRETFONT]
+				,ApplyMap('TabelaNome',VIAACESSO)										as [Guia.Via Acesso]
+				,UNIFICADOR																as [Guia.Unificador]
+				,AGRUPADOR																as [Guia.Agrupador]
+				,(Exists(UNIFICADORCHAVE,UNIFICADOR))*-1								as [Guia.FlagPacote]
+				,ApplyMap('MapaPs',CHCRIACAOREFERENCIADA,0)								as [Guia.FlagProntoSocorro]
+				,NUMEXTERNO																as [Guia.NUMEXTERNO] //este cara
+				,MOVIMENTAC																as [Guia.MOVIMENTAC]
+				,ApplyMap('MapaMovimentac',CHAVE,'') 									as [Guia.PedidoMovimentac]
+				,ApplyMap('MapaTESTE_PS',
+						AutoNumberHash256(
+							Date(AUTORIZACAOINICAB),									/*[Guia.DataAutorizacao]*/
+							PESSOACONTRATOPRODUTO)										/*Guia.ChaveBeneficiarioPlanoSaude]*/
+					,0) 																as [Guia.ChaveTESTE_PS]
+				,CHAUTORIZA																as [Guia.CHAUTORIZA]
+				,PEDIDOCOPARTICIP  														as [Guia.PedidoCoparticip]
+				,PEDIDOCUSTOOPERA														as [Guia.PedidoCustoOpera]
+				
+				,CONTRATADOSOLICITANTE 													as [Guia.ContratadoSolicitanteChave]  //----
+				,ApplyMap('EntidadeCodigo',CONTRATADOSOLICITANTE) 						as [Guia.ContratadoSolicitanteCodigo]
+				,ApplyMap('EntidadeNome',CONTRATADOSOLICITANTE) 						as [Guia.ContratadoSolicitanteNome]
+				,ApplyMap('EntidadeClasse',CONTRATADOSOLICITANTE) 						as [Guia.ContratadoSolicitanteClasse]
+				,ApplyMap('EntidadeCNP',CONTRATADOSOLICITANTE) 							as [Guia.ContratadoSolicitanteCNP]				
+				
+			From [$(qvdraw)](qvd);
+
+
+			// Pacotes
+			Concatenate (Guias)	
+			load 
+				 CHAVE																	as [Guia.Chave]
+				,NUM(Num#(NUMERO),'0') 													as [Guia.Numero]
+				,NUMEROGUIAPRESTADOR													as [Guia.NumeroGuiaPrestador]
+				,LOTE																	as [Guia.NumeroLote] // Está sendo usado no Portal Empresa
+				,CLASSE																	as [Guia.Classe]  // Está sendo usado no Portal Empresa
+				,ApplyMap('Classe',CLASSE) 												as [Guia.ClasseNome]
+				,ApplyMap('TabelaCodigo',CID) 											as [Guia.CIDCodigo]
+				,ApplyMap('TabelaNome',CID)												as [Guia.CIDNome]
+				,(CREDENCIADO=SOLICITANTE)*-1											as [Guia.FlagAutoGeradoCredenciado]
+				,CREDENCIADO 															as [Guia.CredenciadoChave] // Está sendo usado no Portal Empresa
+				,ApplyMap('EntidadeCodigo',CREDENCIADO) 								as [Guia.CredenciadoCodigo]
+				,ApplyMap('EntidadeNome',CREDENCIADO) 									as [Guia.CredenciadoNome]
+				,ApplyMap('EntidadeCNP',CREDENCIADO) 									as [Guia.CredenciadoCNP]
+				,ApplyMap('Classe',ApplyMap('EntidadeClasse',CREDENCIADO))				as [Guia.CredenciadoClasse]				
+				,SOLICITANTE 															as [Guia.SolicitanteChave]  // Está sendo usado no Portal Empresa
+				,ApplyMap('EntidadeCodigo',SOLICITANTE) 								as [Guia.SolicitanteCodigo]
+				,ApplyMap('EntidadeNome',SOLICITANTE) 									as [Guia.SolicitanteNome]
+				,ApplyMap('Classe',ApplyMap('EntidadeClasse',SOLICITANTE)) 	as [Guia.SolicitanteClasse]
+				,ApplyMap('EntidadeCNP',SOLICITANTE) 									as [Guia.SolicitanteCNP]
+				,ApplyMap('TabelaCodigo',SCBOS) 										as [Guia.SolicitanteCBOCodigo]
+				,ApplyMap('TabelaNome',SCBOS) 											as [Guia.SolicitacaoCBONome]
+				,ApplyMap('TabelaCodigo',CARATER) 										as [Guia.SolicitacaoCaraterCodigo]
+				,ApplyMap('TabelaNome',CARATER)											as [Guia.SolicitacaoCaraterNome]
+				,DEPENDENTE 															as [Guia.BeneficiarioChave]
+				,ApplyMap('EntidadeCodigo',DEPENDENTE) 									as [Guia.BeneficiarioCodigo]
+				,Mapsubstring('Capitalize',Capitalize(ApplyMap('EntidadeNome',DEPENDENTE))) as [Guia.BeneficiarioNome]
+				,ApplyMap('EntidadeCNP',DEPENDENTE) 									as [Guia.BeneficiarioCNP]
+				,Date(Floor(ApplyMap('EntidadeNascimento',DEPENDENTE))) 				as [Guia.BeneficiarioDtNascimento]
+				,ApplyMap('EntidadeSexo',DEPENDENTE) 									as [Guia.BeneficiarioSexo]
+				,ATENDIMENTORECEMNATO													as [Guia.BeneficiarioRecemNato]   	// Está sendo usado no Portal Empresa
+				,PESSOACONTRATO															as [Guia.BeneficiarioAdesao]		// Está sendo usado no Portal Empresa
+				,Date(ApplyMap('AdesaoInicio',PESSOACONTRATO))							as [Guia.BeneficiarioInicioVinculo]
+				,Date(ApplyMap('AdesaoFim',PESSOACONTRATO))								as [Guia.BeneficiarioFimVinculo]
+				,(EXECUTANTE=SOLICITANTE)*-1											as [Guia.FlagAutoGeradoExecutante]
+				,EXECUTANTE 															as [Guia.ExecutanteChave]
+				,ApplyMap('EntidadeCodigo',EXECUTANTE) 									as [Guia.ExecutanteCodigo]
+				,ApplyMap('EntidadeNome',EXECUTANTE) 									as [Guia.ExecutanteNome]
+				,ApplyMap('EntidadeCNP',EXECUTANTE) 									as [Guia.ExecutanteCNP]
+				,ApplyMap('EntidadeCep',EXECUTANTE) 									as [Guia.ExecutanteCEP] // Solicitado pela Axismed
+				,ApplyMap('Classe',ApplyMap('EntidadeClasse',EXECUTANTE))  				as [Guia.ExecutanteClasseNome]
+				,MEDICOAUDITOR 															as [Guia.MedicoAuditorChave]
+				,ApplyMap('EntidadeCodigo',MEDICOAUDITOR) 								as [Guia.MedicoAuditorCodigo]
+				,ApplyMap('EntidadeNome',MEDICOAUDITOR) 								as [Guia.MedicoAuditorNome]
+				,ApplyMap('EntidadeCNP',MEDICOAUDITOR) 									as [Guia.MedicoAuditorCNP]
+				,ENFERMEIROAUDITOR 														as [Guia.EnfermeiroAuditorChave]
+				,ApplyMap('EntidadeCodigo',ENFERMEIROAUDITOR)							as [Guia.EnfermeiroAuditorCodigo]
+				,ApplyMap('EntidadeNome',ENFERMEIROAUDITOR) 							as [Guia.EnfermeiroAuditorNome]
+				,ApplyMap('EntidadeCNP',ENFERMEIROAUDITOR) 								as [Guia.EnfermeiroAuditorCNP]
+				,num(CHCRIACAOREFERENCIADA,'0')			 								as [Guia.SenhaAutorizacao]    // Está sendo usado no Portal Empresa
+				,LINHA																	as [Guia.Sequencial]
+				,Date(Floor(ATENDIMENTOINI))											as [Guia.DataInicioAtendimento]
+				,Date(Floor(ATENDIMENTOFIM))											as [Guia.DataFimAtendimento]
+				,PROCEDIMENTO 															as [Guia.ProcedimentoChave]
+				,ApplyMap('TabelaCodigo',PROCEDIMENTO) 									as [Guia.ProcedimentoCodigo]
+				,ApplyMap('TabelaNome',PROCEDIMENTO) 									as [Guia.ProcedimentoNome]
+				,ApplyMap('Classe',ApplyMap('TabelaClasse',PROCEDIMENTO)) 				as [Guia.ProcedimentoClasseDyad]
+				,ApplyMap('TabelaNome',ApplyMap('TabelaTipoProcedimento',PROCEDIMENTO)) as [Guia.ProcedimentoTipoServico]
+				,ApplyMap('TabelaNome',ApplyMap('TabelaGrupoProcedimento',PROCEDIMENTO))as [Guia.ProcedimentoGrupoProcedimento]
+				,ApplyMap('TabelaPrecificacao',PROCEDIMENTO)							as [Guia.ProcedimentoPrecificacaoCodigo]
+				,PAGPROCEDIPERC 														as [Guia.Procedimento%Pagto]
+				,ADICIURGEMEPERC 														as [Guia.Procedimento%Adicional]
+				,COPARTICIPIPERC 														as [Guia.Procedimento%Coparticipacao]
+				,Num(Round(COPARTICIP,$(PREC)),'$(DECFMT)')								as [Guia.ProcedimentoCoparticipacao]
+				,ApplyMap('TabelaNome',TIPODESPESA) 									as [Guia.ProcedimentoTipoDespesa]
+				,TIPODEATENDIMENTO 														as [Guia.TipoAtendimentoChave]
+				,ApplyMap('TabelaCodigo',TIPODEATENDIMENTO) 							as [Guia.TipoAtendimentoCodigo]
+				,ApplyMap('TabelaNome',TIPODEATENDIMENTO) 								as [Guia.TipoAtendimentoNome]
+				,CUSTOASSISTENCIAL 							 							as [Guia.CustoAssistencialChave]
+				,ApplyMap('RecursoCodigo',CUSTOASSISTENCIAL) 							as [Guia.CustoAssistencialCodigo]
+				,ApplyMap('RecursoNome',CUSTOASSISTENCIAL)   							as [Guia.CustoAssistencialNome]
+				,ApplyMap('Classe',ApplyMap('RecursoClasse',CUSTOASSISTENCIAL)) 		as [Guia.CustoAssistencialClasse]
+				,ApplyMap('TabelaNome',ApplyMap('RecursoAto',CUSTOASSISTENCIAL)) 		as [Guia.CustoAssistencialAto]
+				,RECURSO																as [Guia.RecursoChave]
+				,ApplyMap('RecursoCodigo',RECURSO) 										as [Guia.RecursoCodigo]
+				,ApplyMap('RecursoNome',RECURSO)  					 					as [Guia.RecursoNome]
+				,ApplyMap('Classe',ApplyMap('RecursoClasse',RECURSO)) 					as [Guia.RecursoClasse]
+				,ApplyMap('TabelaNome',ApplyMap('RecursoAto',RECURSO)) 					as [Guia.RecursoAto]
+				,ApplyMap('RecursoAcomodacao',RECURSO) 									as [Guia.RecursoAcomodacao]
+				,ApplyMap('RecursoCoparticipativo',RECURSO) 							as [Guia.RecursoCoparticipativo]
+				,ApplyMap('TabelaCodigo',ORIGEM) 										as [Guia.OrigemCodigo]
+				,ApplyMap('TabelaNome',ORIGEM) 											as [Guia.OrigemNome]
+				,ApplyMap('TabelaCodigo',INDICACAOACIDENTE) 							as [Guia.IndicacaoAcidenteCodigo]
+				,ApplyMap('TabelaNome',INDICACAOACIDENTE) 								as [Guia.IndicacaoAcidenteNome]
+				,ApplyMap('TabelaCodigo',TIPOCONSULTA)									as [Guia.TipoConsultaCodigo]
+				,ApplyMap('TabelaNome',TIPOCONSULTA) 									as [Guia.TipoConsultaNome]
+				,ApplyMap('TabelaCodigo',GRAUDEPARTICIPACAO) 							as [Guia.GrauDeParticipacaoCodigo]
+				,ApplyMap('TabelaNome',GRAUDEPARTICIPACAO) 								as [Guia.GrauDeParticipacaoNome]
+				,ApplyMap('TabelaCodigo',FATOGERADOR) 									as [Guia.FatoGeradorCodigo]
+				,ApplyMap('TabelaNome',FATOGERADOR) 									as [Guia.FatoGeradorNome]
+				,ApplyMap('TabelaCodigo',TIPOINTERNACAO) 								as [Guia.TipoInternacaoCodigo]
+				,ApplyMap('TabelaNome',TIPOINTERNACAO) 									as [Guia.TipoInternacaoNome]
+				,ApplyMap('TabelaCodigo',ACOMODACAO) 									as [Guia.AcomodacaoCodigo]
+				,ApplyMap('TabelaNome',ACOMODACAO) 										as [Guia.AcomodacaoNome]
+				,Date(SOLICITACAO)														as [Guia.DataSolicitacao]
+				,SOLICITACAOH															as [Guia.DataHoraSolicitacao]
+				,Date(AUTORIZACAOINICAB)												as [Guia.DataAutorizacao]
+				,Date(EMISSAO)															as [Guia.DataEmissao]
+				,Date(DATAINICIOFATURAMENTO)											as [Guia.DataInicioFaturamento] // Está sendo usado no Portal Empresa
+//				,Time(HORAINICIOFATURAMENTO)											as [Guia.HoraInicioFaturamento] // Adicionado para atender as cargas do Portal Empresa (T3339)
+				,Date(DATAFIMFATURAMENTO)												as [Guia.DataFimFaturamento] 	// Está sendo usado no Portal Empresa
+//				,Time(HORAFIMFATURAMENTO)												as [Guia.HoraFimFaturamento] 	// Adicionado para atender as cargas do Portal Empresa (T3339)
+				,Date(REALIZACAO)														as [Guia.DataRealizacao]   		// Está sendo usado no Portal Empresa
+				,REALIZACAOH															as [Guia.DataHoraIniRealizacao]
+				,REALIZACAOFIMH															as [Guia.DataHoraFimRealizacao]
+				,NUMEROCARTAO															as [Guia.NumeroCartao]
+				,NUMEROGUIAPRINCPREST													as [Guia.NumeroGuiaPrincipal]
+				,STATUSGUIA																as [Guia.Status]
+				,STATUS																	as [Guia.ProcedimentoStatus]
+				,CHAVECONTRATO															as [Guia.ContratoChave]
+				//,CODIGOCONTRATO															as [Guia.ContratoCodigo]
+				//,Num(Round(ApplyMap('MapaTaxaEmpresa',CODIGOCONTRATO,0.2),$(PREC)),'$(DECFMT)')	as [Guia.ContratoTaxaAdmEmpresa]
+				
+				,NUM(Num#(CODIGOCONTRATO),'0') as [Guia.ContratoCodigo] //CHAMADO 009032
+			    ,Num#(Round(ApplyMap('MapaTaxaEmpresa',NUM(Num#(CODIGOCONTRATO),'0'),0.2),$(PREC)),'$(DECFMT)') as [Guia.ContratoTaxaAdmEmpresa] //CHAMADO 009032
+				
+				
+				,ApplyMap('Classe',CLASSECONTRATO) 										as [Guia.ContratoClasse]
+				,NOMECONTRATO															as [Guia.ContratoNome]
+				,ApplyMap('TabelaCodigo',SGRUPOCONTRATO)								as [Guia.ContratoGrupoContrato]
+				,UNIFICADOR																as [Guia.Unificador]
+				,AGRUPADOR																as [Guia.Agrupador]
+				,0																		as [Guia.FlagPacote]
+				,Num(Round(GLOSADO,$(PREC)),'$(DECFMT)') 								as [Guia.ProcedimentoVlrGlosadoItemPacote]
+				,Num(Round(TOTAL,$(PREC)),'$(DECFMT)') 									as [Guia.ProcedimentoVlrPagoItemPacote]
+				,Num(Round(COBRADO,$(PREC)),'$(DECFMT)') 								as [Guia.ProcedimentoVlrCobradoItemPacote]
+				,QUANTIDADEAUTORIZADA													as [Guia.ProcedimentoQuantAutorizadaItemPacote]
+				,QUANTIDADECOBRADA														as [Guia.ProcedimentoQuantCobradaItemPacote]
+				,ApplyMap('MapaCompPacote',UNIFICADOR)									as [Guia.CompetenciaPagamento]
+			From [$(vDirRoot)\QVD\DyadExtracao\Tabelas\GuiaPacotes.qvd](qvd)
+			where Exists([Guia.Chave],UNIFICADOR) ;
+			
+			GuiasTemp:
+			Load
+				*,	
+				IF(Match(Guia.CredenciadoCodigo,'718555','40043','36319') or Match(Guia.ExecutanteCodigo,'718555','40043','36319'), 'CIAS',
+    			IF( Match(Guia.CredenciadoCodigo,'88888','55555') or Match(Guia.ExecutanteCodigo,'88888','55555'), 'Reabilitação',
+    				'Rede' ))  															as Guia.TipoRede,
+//				Num(Round(alt(
+//				If(
+//					IsNum(Guia.CompetenciaPagamento),
+//					Guia.ProcedimentoVlrPago*(Guia.PedidoVlrTaxa/ApplyMap('MapaCustos',Guia.CompetenciaPagamento & Guia.ContratoCodigo)) 
+//				,0),0),$(PREC)),'##0,00')  as Guia.ProcedimentoVlrRateioTaxaPedido,   //------- Comentado dia 12/09/2019 após análise que campo esta sendo dropado no final do Datamart!!
+				If(Match(Guia.ContratoCodigo,25100,25101,25102,25103,25104,25105,25106,25108,25109,25110,25111,25113,25114,21180,21181,21182,21570),'Colaborador',  //--21570 alterado conforme chamado 17318 --CHAMADO 037322	INCLUSAO DE NOVOS CODIGOS
+				If(Match(Guia.ContratoClasse,'Contratos de Custo Operacional') 
+					and (Guia.ContratoCodigo>= 6200 AND Guia.ContratoCodigo<=7699), 'SOU Pré',  //--- regra SOU fornecida pelo Reginaldo
+				If(Match(Guia.ContratoClasse,'Contratos de Custo Operacional') 
+					and (Guia.ContratoCodigo>= 7700 AND Guia.ContratoCodigo<=7999), 'SOU CO',	 //--- regra SOU fornecida pelo Reginaldo
+				If(Match(Guia.ContratoClasse,'Contratos de Custo Operacional'),'Custo Operacional PJ',	
+				If(Match(Guia.ContratoClasse,'Contratos Patrocinados') 
+					and Match(Guia.ContratoCodigo,3212,3213,4210), 'Custo Operacional PJ',
+				If(Match(Guia.ContratoClasse,'Contratos Patrocinados') 
+					and Match(Guia.ContratoCodigo,6103), 'Custo Operacional PF',	
+				If(Match(Guia.ContratoClasse,'Contratos Patrocinados'),  'Pré Pagamento PJ',		 
+				If(Match(Guia.ContratoClasse,'Contratos Coletivos') , 'Pré Pagamento PJ',	
+				If(Match(Guia.ContratoClasse,'Contratos Individuais') , 'Pré Pagamento PF',						
+				If(Match(Guia.ContratoClasse,'Contratos de Intercâmbio Pré-Pagamento') , 'Pré Pagamento Unimed Fora',
+				If(Match(Guia.ContratoClasse,'Contratos de Intercâmbio em Custo') , 'Intercâmbio', 'Contrato Não Identificado'	
+							))))))))))) 															as [Guia.ContratoTipoEmpresaDetalhado],
+				If(Match(Guia.ContratoCodigo,25100,25101,25102,25103,25104,25105,25106,25108,25109,25110,25111,25113,25114,4210,21180,21181,21182,21570),'Colaborador',  //--21570 alterado conforme chamado 17318
+				If(Match(Guia.ContratoClasse,'Contratos de Custo Operacional') 
+					and (Guia.ContratoCodigo>= 6200 AND Guia.ContratoCodigo<=7999), 'SOU',  //--- regra SOU fornecida pelo Reginaldo
+				If(Match(Guia.ContratoClasse,'Contratos de Custo Operacional'),'Custo Operacional',	
+				If(Match(Guia.ContratoClasse,'Contratos Patrocinados') 
+					and Match(Guia.ContratoCodigo,3212,3213,6103,4210), 'Custo Operacional',
+				If(Match(Guia.ContratoClasse,'Contratos Patrocinados'),  'Pré Pagamento',		 
+				If(Match(Guia.ContratoClasse,'Contratos Coletivos','Contratos Individuais','Contratos de Intercâmbio Pré-Pagamento') , 'Pré Pagamento',	
+				If(Match(Guia.ContratoClasse,'Contratos de Intercâmbio em Custo') , 'Intercâmbio', 'Contrato Não Identificado'	
+							))))))) 																as [Guia.ContratoTipoEmpresa],
+				left(Guia.CustoAssistencialNome,Index(Guia.CustoAssistencialNome,'-Ato')-1) & 
+					left(Guia.CustoAssistencialNome,Index(Guia.CustoAssistencialNome,'- Ato')-1) 	as [Guia.CustoAssistencialGrupo]
+				,ApplyMap('ServicoClasse',[Guia.ProcedimentoCodigo]) 								as [Guia.ProcedimentoClasse]
+				,ApplyMap('ServicoSubClasse',[Guia.ProcedimentoCodigo]) 							as [Guia.ProcedimentoSubClasse]
+				,ApplyMap('ServicoEspecialidade',[Guia.ProcedimentoCodigo]) 						as [Guia.ProcedimentoEspecialidade]
+				,ApplyMap('GrupoPacote',[Guia.ProcedimentoCodigo],null()) 							as [Guia.ProcedimentoPacote]
+				,ApplyMap('Classe',[Guia.SolicitanteClasse])										as [Guia.SolicitanteClasseNome]
+				,If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=18,'00 a 18',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=23,'19 a 23',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=28,'24 a 28',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=33,'29 a 33',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=38,'34 a 38',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=43,'39 a 43',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=48,'44 a 48',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=53,'49 a 53',
+					If(Age(Today(),[Guia.BeneficiarioDtNascimento]) <=58,'54 a 58',		
+				    '59 e acima'))))))))) 															as [Guia.BeneficiarioFaixaEtaria]
+			,if([Guia.ProcedimentoPrecificacaoCodigo] = '30','Pacotes Insumos',[Guia.ProcedimentoPrecificacaoCodigo]) as [Guia.ProcedimentoPrecificacao]// eh uma combo, precisa mapear os outros casos
+			Resident Guias;
+			Drop Table Guias;
+			Rename Table GuiasTemp to Guias;
+
+			If NoOfRows('Guias') > 0 then
+				Store Guias into [$(qvdfinal)](qvd);
+				drop Table Guias;
+			Endif;
+//	TRACE Encontrado;
+ else
+	TRACE Não Encontrado;
+ end if
+
+next;
+
+if TableNumber('Pacotes')>0 then
+	Drop Table Pacotes;
+endif;
+
+Trace;
+Trace Fim dos Custos; 
+
+
+
+TRACE ************* TERMINO FATO CUSTO ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+
+//EXIT SCRIPT;
+-----------------------------------------------------------------------------------------------------
+TRACE *************** INICIO FATO RECEITAS ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+
+//LET vDataBase = Date(MakeDate(2019,8),'DD/MM/YY');
+LET vDataBase = Date(Today(),'DD/MM/YY');
+SET MesesProcessarRec = 24;
+
+Trace;
+Trace ------------ Leitura de Receitas;
+
+For i = (MesesProcessarRec-1) to 0 step -1 
+ LET Comp		= Date(AddMonths(MonthStart(Date#('$(vDataBase)','DD/MM/YY')),-$(i)),'YYYYMM');
+ LET Pasta 		= Left(Comp,4);
+ LET qvdraw 	= '$(PATHRAW)\$(Pasta)\ReceitasRaw$(Comp).qvd';
+ LET qvdfinal 	= '$(PATHQVD)_$(Pasta)\Receitas$(Comp).qvd';
+ TRACE $(qvdraw);
+	
+ if(FileSize('$(qvdraw)')>0)then	
+		
+		Receitas:
+		Load  *,If(Match(Receita.ContratoCodigo,25100,25101,25102,25103,25104,25105,25106,25108,25109,25110,25111,25113,25114,21180,21181,21182,21570),'Colaborador', //--21570 alterado conforme chamado 17318
+				If(Match(Receita.ContratoClasse,'Contratos de Custo Operacional') 
+					and (Receita.ContratoCodigo>= 6200 AND Receita.ContratoCodigo<=7699), 'SOU Pré',  //--- regra SOU fornecida pelo Reginaldo
+				If(Match(Receita.ContratoClasse,'Contratos de Custo Operacional') 
+					and (Receita.ContratoCodigo>= 7700 AND Receita.ContratoCodigo<=7999), 'SOU CO',	 //--- regra SOU fornecida pelo Reginaldo
+				If(Match(Receita.ContratoClasse,'Contratos de Custo Operacional'),'Custo Operacional PJ',	
+				If(Match(Receita.ContratoClasse,'Contratos Patrocinados') 
+					and Match(Receita.ContratoCodigo,3212,3213,4210), 'Custo Operacional PJ',
+				If(Match(Receita.ContratoClasse,'Contratos Patrocinados') 
+					and Match(Receita.ContratoCodigo,6103), 'Custo Operacional PF',	
+				If(Match(Receita.ContratoClasse,'Contratos Patrocinados'),  'Pré Pagamento PJ',		 
+				If(Match(Receita.ContratoClasse,'Contratos Coletivos') , 'Pré Pagamento PJ',	
+				If(Match(Receita.ContratoClasse,'Contratos Individuais') , 'Pré Pagamento PF',						
+				If(Match(Receita.ContratoClasse,'Contratos de Intercâmbio Pré-Pagamento') , 'Pré Pagamento Unimed Fora',
+				If(Match(Receita.ContratoClasse,'Contratos de Intercâmbio em Custo') , 'Intercâmbio', 'Contrato Não Identificado'	
+							))))))))))) 									as [Receita.ContratoTipoEmpresaDetalhado],			
+				If(Match(Receita.ContratoCodigo,25100,25101,25102,25103,25104,25105,25106,25108,25109,25110,25111,25113,25114,21180,21181,21182,21570),'Colaborador',  //--21570 alterado conforme chamado 17318
+				If(Match(Receita.ContratoClasse,'Contratos de Custo Operacional') 
+					and (Receita.ContratoCodigo>= 6200 AND Receita.ContratoCodigo<=7999), 'SOU',  //--- regra SOU fornecida pelo Reginaldo
+				If(Match(Receita.ContratoClasse,'Contratos de Custo Operacional'),'Custo Operacional',	
+				If(Match(Receita.ContratoClasse,'Contratos Patrocinados') 
+					and Match(Receita.ContratoCodigo,3212,3213,6103,4210), 'Custo Operacional',
+				If(Match(Receita.ContratoClasse,'Contratos Patrocinados'),  'Pré Pagamento',		 
+				If(Match(Receita.ContratoClasse,'Contratos Coletivos') , 'Pré Pagamento',	
+				If(Match(Receita.ContratoClasse,'Contratos Individuais') , 'Pré Pagamento',						
+				If(Match(Receita.ContratoClasse,'Contratos de Intercâmbio Pré-Pagamento') , 'Pré Pagamento',
+				If(Match(Receita.ContratoClasse,'Contratos de Intercâmbio em Custo') , 'Intercâmbio', 'Contrato Não Identificado'	
+							))))))))) 										as [Receita.ContratoTipoEmpresa];
+		Load 
+			 CHAVEPEDIDO													as [Receita.PedidoChave]
+			,Num(NUMEROPEDIDO,'0')											as [Receita.PedidoNumero]
+			,CLASSEPEDIDO 													as [Receita.PedidoClasse]
+			,ApplyMap('Classe',CLASSEPEDIDO) 								as [Receita.PedidoClasseNome]
+			,Year(SCOMPETENCIA)*100+Month(SCOMPETENCIA)						as [Receita.PedidoCompetencia]
+			,num(Round(BRUTO,$(PREC)),'$(DECFMT)')							as [Receita.PedidoVlrBruto]
+			,num(Round(LIQUIDO,$(PREC)),'$(DECFMT)')						as [Receita.PedidoVlrLiquido]
+			,num(Round(VALORDESCONTO,$(PREC)),'$(DECFMT)')					as [Receita.PedidoVlrDescontoItem]
+			,num(Round(If(Match(CLASSEPEDIDO,-1895922225),$(PREC)),'$(DECFMT)'),VLRDESCONTOCOBRANCA*LIQUIDO/100) as [Receita.PedidoVlrDesconto] 
+			,num(Round(LIQUIDO,$(PREC)),'$(DECFMT)')						as [Receita.PedidoUnitario]
+			,Date(Floor(EMISSAOPEDIDO))										as [Receita.PedidoDtEmissao]
+			,DEPENDENTE														as [Receita.BeneficiarioChave]
+			,PESSOACONTRATO													as [Receita.SPessoaContrato] 	// INCLUSAO PARA PORTAL EMPRESA
+			,SNUMERO														as [Receita.SNumero] 			// INCLUSAO PARA PORTAL EMPRESA
+			,RECURSO														as [Receita.SRecurso] 			// INCLUSAO PARA PORTAL EMPRESA
+//			,STOTALNEGOCIADO												as [Receita.STotal_Negociado] 	// INCLUSAO PARA PORTAL EMPRESA
+			,SCHAVE_TITULO 													as [Receita.SChave_Titulo] 		// INCLUSAO PARA PORTAL EMPRESA
+			,ApplyMap('EntidadeCodigo',DEPENDENTE) 							as [Receita.BeneficiarioCodigo]
+			,ApplyMap('EntidadeNome',DEPENDENTE) 							as [Receita.BeneficiarioNome]
+			,ApplyMap('EntidadeCNP',DEPENDENTE) 							as [Receita.BeneficiarioCNP]
+			,Date(Floor(ApplyMap('EntidadeNascimento',DEPENDENTE))) 		as [Receita.BeneficiarioDtNascimento]
+			,ApplyMap('EntidadeSexo',DEPENDENTE) 							as [Receita.BeneficiarioSexo]
+			,NUMEROCARTAO													as [Receita.NumeroCartao]
+			,CHAVERECURSO 													as [Receita.RecursoChave]
+			,ApplyMap('RecursoCodigo',CHAVERECURSO) 						as [Receita.RecursoCodigo]
+			,ApplyMap('RecursoNome',CHAVERECURSO) 							as [Receita.RecursoNome]
+			,CHAVEPLANO 													as [Receita.PlanoChave]
+			,ApplyMap('RecursoCodigo',CHAVEPLANO) 							as [Receita.PlanoCodigo]
+			,ApplyMap('RecursoNome',CHAVEPLANO) 							as [Receita.PlanoNome]
+			,ApplyMap('RecursoClasse',CHAVEPLANO) 							as [Receita.PlanoClasse]
+			,ApplyMap('RecursoAcomodacao',CHAVEPLANO) 						as [Receita.PlanoAcomodacao]
+			,ApplyMap('RecursoRegulamentacao',CHAVEPLANO) 					as [Receita.PlanoRegulamentacao]
+			,ApplyMap('RecursoPTU',CHAVEPLANO) 								as [Receita.PlanoPTU]
+			,ApplyMap('RecursoCoparticipativo',CHAVEPLANO)					as [Receita.PlanoCoparticipativo]
+			,SFORMACAOPRECO													as [Receita.FormacaoPrecoChave]
+			,ApplyMap('TabelaCodigo',SFORMACAOPRECO) 						as [Receita.FormacaoPrecoCodigo]
+			,ApplyMap('TabelaNome',SFORMACAOPRECO) 							as [Receita.FormacaoPrecoNome]
+			,STIPOCONTRATA													as [Receita.TipoContratacaoChave]
+			,ApplyMap('TabelaCodigo',STIPOCONTRATA) 						as [Receita.TipoContratacaoCodigo]
+			,ApplyMap('TabelaNome',STIPOCONTRATA) 							as [Receita.TipoContratacaoNome]
+			,CHAVECONTRATO													as [Receita.ContratoChave]
+			,CODCONTRATO													as [Receita.ContratoCodigo]
+			,ApplyMap('Classe',CLASSECONTRATO,'*') 							as [Receita.ContratoClasse]
+			,NOMECONTRATO													as [Receita.ContratoNome]
+			,ApplyMap('TabelaCodigo',SGRUPOCONTRATO)						as [Receita.ContratoGrupoContrato]
+			,PESSOAPEDIDO													as [Receita.ContratanteChave]
+			,ApplyMap('EntidadeCodigo',PESSOAPEDIDO) 						as [Receita.ContratanteCodigo]
+			,ApplyMap('EntidadeNome',PESSOAPEDIDO) 							as [Receita.ContratanteNome]
+			,ApplyMap('EntidadeCNP',PESSOAPEDIDO) 							as [Receita.ContratanteCNP]
+			,if(len(Keepchar(ApplyMap('EntidadeCNP',PESSOAPEDIDO),'0123456789'))=11,'Fisica','Juridica') as [Receita.ContratanteTipoPessoa]
+			,PEDIDOCHAVECRIACAO												as [Receita.PedidoChaveCriacao]
+			,ApplyMap('MapDataContabil',PEDIDOCHAVECRIACAO)                 as [Receita.DataContabil]
+		    ,ApplyMap('MapCompContabil',PEDIDOCHAVECRIACAO)                 as [Receita.CompetenciaContabil]
+			
+			
+			,PEDIDOCHAVEBAIXA	 											as [Receita.PedidoChaveBaixa]
+			,num(Round(ISS,$(PREC)*10),'$(DECFMT)')							as [Receita.VlrImpISS]
+			,num(Round(COFINS,$(PREC)*10),'$(DECFMT)')						as [Receita.VlrImpCOFINS]
+			,num(Round(CSLL,$(PREC)*10),'$(DECFMT)')						as [Receita.VlrImpCSLL]
+			,num(Round(PIS,$(PREC)*10),'$(DECFMT)')							as [Receita.VlrImpPIS]
+			,num(Round(INSS,$(PREC)*10),'$(DECFMT)')						as [Receita.VlrImpINSS]
+			,num(Round(IR,$(PREC)*10),'$(DECFMT)') 							as [Receita.VlrImpIR]
+			,num(Round(ISSRETFON,$(PREC)*10),'$(DECFMT)')					as [Receita.VlrImpISSRETFON]
+			,num(Round(INSSRETFO,$(PREC)*10),'$(DECFMT)')					as [Receita.VlrImpINSSRETFO]
+			,num(Round(COFINSREFO,$(PREC)*10),'$(DECFMT)')					as [Receita.VlrImpCOFINSREFO]
+			,num(Round(CSLLREFO,$(PREC)*10),'$(DECFMT)')					as [Receita.VlrImpCSLLREFO]
+			,num(Round(PISREFO,$(PREC)*10),'$(DECFMT)')						as [Receita.VlrImpPISREFO]
+			,num(Round(IRRETFONT,$(PREC)*10),'$(DECFMT)')					as [Receita.VlrImpIRRETFONT]
+			,num(Round(VLRDESCONTOCOBRANCA,$(PREC)),'$(DECFMT)') 			as [Receita.Vlr%DescontoCobranca]
+		From [$(qvdraw)](qvd);
+		
+		If NoOfRows('Receitas') > 0 then
+			Store Receitas into [$(qvdfinal)](qvd);
+			drop Table Receitas;
+		Endif;
+
+ else
+	TRACE Não Encontrado;
+ end if	
+ 
+next;
+
+Trace;
+Trace Fim das Receitas;
+
+
+
+TRACE ************* TERMINO FATO RECEITAS ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+
+
+
+
+
+
+
+
+
+
+
