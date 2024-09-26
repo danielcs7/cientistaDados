@@ -1,0 +1,453 @@
+CRIACAO DO APP UBER QLIKVIEW
+
+LET vDirRoot = 'D:\AppQlikView';
+
+
+//DW_NOVO
+
+TabelaSemana:
+LOAD
+SEMANA,
+SEQUENCIASEMALNAL
+INLINE[
+SEMANA,SEQUENCIASEMALNAL
+'domingo',1
+'segunda-feira',2
+'terça-feira',3
+'quarta-feira',4
+'quinta-feira',5
+'sexta-feira',6
+'sábado',7
+];
+
+TabelaPeriodo:
+LOAD
+PERIODO,
+SEQUENCIAPERIODO
+INLINE[
+PERIODO,SEQUENCIAPERIODO
+'MANHA',1
+'TARDE',2
+'NOITE',3
+];
+
+
+
+
+MapaSemana:
+Mapping
+LOAD SEMANA, 
+     SEQUENCIASEMALNAL       
+Resident TabelaSemana;
+
+MapaPeriodo:
+Mapping
+LOAD PERIODO, 
+     SEQUENCIAPERIODO       
+Resident TabelaPeriodo;
+
+//PALETAS DE CORES UNIMED 
+TRACE ************* CONFIG VARIAVEIS CORES ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+ 
+Let vColor_Prim_VerdeEscuro = RGB(0,153,93);
+Let vColor_Prim_VerdeClaro = RGB(177,211,75);
+Let vColor_Prim_BrancoBege = RGB(255,240,199);
+Let vColor_Prim_Branco = RGB(255,255,255);
+Let vColor_SecClara_VermelhoVivo = RGB(237,22,81);
+Let vColor_SecClara_RoxoEscuro = RGB(163,35,142);
+Let vColor_SecClara_Laranja = RGB(244,121,32);
+Let vColor_SecClara_Amarelo = RGB(255,203,8);
+Let vColor_SecClara_CinzaClaro = RGB(196,203,207);
+Let vColor_SecEscura_VerdeEscuro = RGB(0,64,26);
+Let vColor_SecEscura_AzulEscuro = RGB(65,21,100);
+Let vColor_SecEscura_Verde = RGB(10,95,85);
+Let vColor_SecEscura_CinzaAzuladoClaro = RGB(91,92,101);
+Let vColor_SecEscura_Marrom = RGB(104,45,0);
+ 
+// Cores complementares Unimed
+let vColor_Complementar_Cinza_75 = RGB(124,124,131);
+let vColor_Complementar_Cinza_50 = RGB(158,160,168);
+let vColor_Complementar_Cinza_20 = RGB(200,201,205);
+ 
+let vColor_Complementar_Marrom_75 = RGB(135,83,44);
+let vColor_Complementar_Marrom_50 = RGB(170,127,95);
+let vColor_Complementar_Marrom_20 = RGB(209,181,160);
+ 
+let vColor_Complementar_Roxo_75 = RGB(98,68,127);
+let vColor_Complementar_Roxo_50 = RGB(134,114,156);
+let vColor_Complementar_Roxo_20 = RGB(182,171,202);
+ 
+let vColor_Complementar_Verde_75 = RGB(78,122,114);
+let vColor_Complementar_Verde_50 = RGB(127,153,148);
+let vColor_Complementar_Verde_20 = RGB(183,195,193);
+ 
+let vColor_Complementar_Vermelho_75 = RGB(240,102,111);
+let vColor_Complementar_Vermelho_50 = RGB(245,145,149);
+let vColor_Complementar_Vermelho_20 = RGB(250,200,195);
+ 
+let vColor_Complementar_Rosa_75 = RGB(179,95,164);
+let vColor_Complementar_Rosa_50 = RGB(198,141,190);
+let vColor_Complementar_Rosa_20 = RGB(222,193,221);
+ 
+let vColor_Complementar_CinzaClaro_75 = RGB(207,211,214);
+let vColor_Complementar_CinzaClaro_50 = RGB(223,224,225);
+let vColor_Complementar_CinzaClaro_20 = RGB(236,236,236);
+ 
+let vColor_Complementar_VerdeAzulado_75 = RGB(29,170,125);
+let vColor_Complementar_VerdeAzulado_50 = RGB(122,192,160);
+let vColor_Complementar_VerdeAzulado_20 = RGB(186,221,204);
+ 
+let vColor_Complementar_VerdeEscuro_75 = RGB(36,95,64);
+let vColor_Complementar_VerdeEscuro_50 = RGB(97,133,110);
+let vColor_Complementar_VerdeEscuro_20 = RGB(165,185,170);
+ 
+let vColor_Complementar_VerdeClaro_75 = RGB(194,219,121);
+let vColor_Complementar_VerdeClaro_50 = RGB(212,229,163);
+let vColor_Complementar_VerdeClaro_20 = RGB(231,240,206);
+ 
+let vColor_Complementar_Bege_75 = RGB(255,241,210);
+let vColor_Complementar_Bege_50 = RGB(255,246,225);
+let vColor_Complementar_Bege_20 = RGB(255,250,238);
+ 
+let vColor_Complementar_Laranja_75 = RGB(246,150,81);
+let vColor_Complementar_Laranja_50 = RGB(250,182,131);
+let vColor_Complementar_Laranja_20 = RGB(253,217,187);
+ 
+ 
+let vColor_Complementar_Ouro = RGB(201,151,0);
+let vColor_Complementar_Prata = RGB(158,162,162);
+let vColor_Complementar_Bronze = RGB(169,67,30);
+ 
+ 
+ 
+ 
+TRACE ************* TERMINO CONFIG VARIAVEIS CORES ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+----------------------------------------------------------------------------------
+CRONTOLE DE ACESSO
+
+TRACE *************** INICIO CONTROLE DE ACESSO ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+
+LET vSectionAccess = '$(vDirRoot)\Licenças\';
+
+//RESTRIÇÃO DE ACESSOS
+SECTION ACCESS;
+ACCESS:
+LOAD UPPER(Aplicação)					as APP, 
+     'ADMIN'							as ACCESS, 
+     UPPER(Usuario)						as NTNAME
+FROM [$(vSectionAccess)Controle de Licenças.xlsx]
+(ooxml, embedded labels, table is Plan1)
+WHERE UPPER(Aplicação) = UPPER('COMERCIAL.QVW');
+
+Concatenate
+LOAD * INLINE [
+    APP, ACCESS, NTNAME
+    RELATORIO_UNIMED_UBER.QVW, ADMIN, REDE\FULANO
+    RELATORIO_UNIMED_UBER.QVW, ADMIN, REDE\BELTRANO
+    
+];
+Section Application;
+
+
+TRACE ************* TERMINO CONTROLE DE ACESSO ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+------------------------------------------------------------------------------------------
+RESTRICAO AO APP
+SET vUserPerfilFiltro	=  
+ =IF(UPPER(OSuser( )) = 'REDE\FULANO','*',
+  IF(UPPER(OSuser( )) = 'REDE\BELTRANO','REST1',
+  IF(UPPER(OSuser( )) = 'REDE\SICLANO','REST2',
+  '0')));
+
+SET vUser_ACESSO =
+ =IF(UPPER(OSuser( )) = 'REDE\FULANO','REST1',
+  IF(UPPER(OSuser( )) = 'REDE\BELTRANO','*',
+  IF(UPPER(OSuser( )) = 'REDE\SICLANO','REST2',
+    
+  '0')));
+----------------------------------------------------------------------
+ETL DADOS
+TRACE *************** INICIO DADOS UBER ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+
+[stgUberUnimed]:
+LOAD id_viagem, 
+     registro_data_hora_utc, 
+     data_solicitacao_utc, 
+     hora_solicitacao_utc, 
+     data_solicitacao_local, 
+     hora_solicitacao_local, 
+     hr_solicitacao, 
+     rang_hr_solicitacao,
+     rang_tempo,
+     Applymap('MapaPeriodo',semana,0) as seqPeriodo,
+     data_chegada_utc, 
+     hora_chegada_utc, 
+     data_chegada_local, 
+     hora_chegada_local, 
+     minutos_gastos, 
+     tempo_gasto, 
+     compensacao_fuso_horario, 
+     nome, 
+     sobrenome, 
+     email, 
+     id_funcionario, 
+     servico, 
+     cidade, 
+     distancia_mi, 
+     duracao_min, 
+     endereco_partida, 
+     CEP_PARTIDA, 
+     CidadePartidade, 
+     CEP_DESTINO, 
+     endereco_destino, 
+     codigo_despesa, 
+     detalhamento_despesa, 
+     faturas, 
+     programa, 
+     grupo, 
+     AGRUPAMENTO, 
+     forma_pagamento, 
+     tipo_transacao, 
+     valor_moeda_local_sem_tributos, 
+     tributos_moeda_local, 
+     valor_extra_moeda_local, 
+     valor_transacao_moeda_local_com_tributos, 
+     codigo_moeda_local, 
+     valor_brl_sem_tributos, 
+     tributos_brl, 
+     valor_extra_brl, 
+     valor_transacao_brl_com_tributos, 
+     taxa_servico_tecnologia_estimada_brl, 
+     /*programa_vouchers, 
+     observacao_despesas_programa_vouchers, 
+     codigo_voucher, 
+     regras_voucher, 
+     numero_fatura, 
+     id_campanha_vouchers, 
+     nome_convidado, 
+     sobrenome_convidado, 
+     deducoes_moeda_local, 
+     is_group_order, 
+     tipo_atendimento, 
+     pais, 
+     tipo_cancelamento, 
+     economia_assinatura_moeda_local, 
+     */
+     km_rodado, 
+     km, 
+     colaborador, 
+     dt_solicitacao, 
+     dt_chegada, 
+     Ano, 
+     semana, 
+     Applymap('MapaSemana',semana,0) as segSemana,
+     comp, 
+     bairroPartida, 
+     bairroDestino,
+     tipo_cancelamento
+FROM
+[D:\AppQlikView\QVD\UBER\UBERUNIMED.qvd](qvd)
+
+;
+
+
+[valoresHoras]:
+LOAD valoresHoras.HoraSolicit, 
+     valoresHoras.qtdViagens
+FROM
+[D:\AppQlikView\QVD\UBER\UBERUNIMED_HORAS.qvd]
+(qvd);
+
+
+tag field AGRUPAMENTO with $hidden;
+
+
+dbRoutes:
+LOAD
+     AGRUPAMENTO,
+    bairroPartida & ' - ' & bairroDestino as Route,
+    Count(id_viagem) as NumberOfTrips
+Resident stgUberUnimed // Substitua YourTableName pelo nome da tabela onde você carregou os dados
+Group By
+    AGRUPAMENTO,
+    bairroPartida,
+    bairroDestino;
+
+
+TRACE ************* TERMINO CONTROLE DE ACESSO ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+
+EXIT SCRIPT;
+---------------------------------------------------------------------------------------
+CRIAÇÃO DO QVD
+
+LET vDirRoot = 'D:\AppQlikView';
+
+
+//DW_NOVO
+
+LET vDirRoot = 'D:\AppQlikView';
+TRACE ************* INICIO DA CARGA ****************;
+LET vHoraInicialTotal = Now();
+TRACE Hora de Inicio total: $(vHoraInicialTotal);
+
+
+
+LOAD id_viagem, 
+	registro_data_hora_utc, 
+	data_solicitacao_utc, 
+	hora_solicitacao_utc, 
+	data_solicitacao_local, 
+	hora_solicitacao_local, 
+	hr_solicitacao,
+	rang_hr_solicitacao,
+	rang_tempo,
+	data_chegada_utc, 
+	hora_chegada_utc, 
+	data_chegada_local, 
+	hora_chegada_local, 
+    minutos_gastos,
+    tempo_gasto,
+	compensacao_fuso_horario, 
+	nome, 
+	sobrenome, 
+	email, 
+	id_funcionario, 
+	servico, 
+	cidade, 
+	distancia_mi, 
+	duracao_min, 
+	endereco_partida, 
+    CEP_PARTIDA,
+    CidadePartidade,
+    CEP_DESTINO,
+	endereco_destino, 
+	codigo_despesa, 
+	detalhamento_despesa, 
+	faturas, 
+    programa,
+	grupo, 
+	UPPER(grup) as AGRUPAMENTO, 
+	forma_pagamento, 
+	tipo_transacao, 
+	valor_moeda_local_sem_tributos, 
+	tributos_moeda_local, 
+	valor_extra_moeda_local, 
+	valor_transacao_moeda_local_com_tributos, 
+	codigo_moeda_local, 
+	valor_brl_sem_tributos, 
+	tributos_brl, 
+	valor_extra_brl, 
+	valor_transacao_brl_com_tributos, 
+	taxa_servico_tecnologia_estimada_brl, 
+	programa_vouchers, 
+	observacao_despesas_programa_vouchers, 
+	codigo_voucher, 
+	regras_voucher, 
+	numero_fatura, 
+	id_campanha_vouchers, 
+	nome_convidado, 
+	sobrenome_convidado, 
+	deducoes_moeda_local, 
+	is_group_order, 
+	tipo_atendimento, 
+	pais, 
+	tipo_cancelamento, 
+	economia_assinatura_moeda_local, 
+	km_rodado, 
+	km, 
+	colaborador, 
+	dt_solicitacao, 
+	dt_chegada, 
+	Ano, 
+	semana,
+    comp,
+    bairroPartida,
+    bairroDestino;
+
+[stgUberUnimed]:
+sql SELECT "id_viagem",
+	
+FROM raw.stgUberUnimeds  WITH (NOLOCK) 
+where 1=1
+//--and programa = 'UNIMED.HOLDING / GERENCIA'
+//--and grupo NOT like '%RELCOOP%'
+;
+
+
+ //If NoOfRows('stgUberUnimed') > 0 then
+
+   Store stgUberUnimed into [$(vDirRoot)\\qvd\UBER\UBERUNIMED.qvd](qvd);
+		
+// Endif;	 
+//drop Table stgUberUnimed;
+
+
+
+
+LOAD
+hora_solicitacao_local as valoresHoras.HoraSolicit,
+qtde                   as valoresHoras.qtdViagens;
+valoresHoras:
+sql select hora_solicitacao_local,count(distinct id_viagem)qtde
+from raw.stgUberUnimeds
+where 1=1
+//--and programa = 'UNIMED.HOLDING / GERENCIA'
+//--and grupo NOT like '%RELCOOP%'
+group by hora_solicitacao_local
+HAVING COUNT(DISTINCT id_viagem) > 1;
+
+//If NoOfRows('valoresHoras') > 0 then
+
+   Store valoresHoras into [$(vDirRoot)\\qvd\UBER\UBERUNIMED_HORAS.qvd](qvd);
+		
+// Endif;	 
+//drop Table valoresHoras;
+
+
+TRACE ************* TERMINO  ****************;
+LET vHoraTerminoTotal = Now();
+LET vHoraTotal = TIME(vHoraTerminoTotal - vHoraInicialTotal);
+TRACE Tempo Total de Carga: $(vHoraTotal);
+TRACE ;
+TRACE ****************************************************;
+TRACE ====================================================;
+TRACE ****************************************************;
+TRACE ;
+
+
+EXIT SCRIPT;
+
+
+
+
+
+
